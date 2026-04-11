@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { ArrowRight, BookmarkCheck, BookOpen, Timer } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import Header from "@/components/layout/header"
+import QuizConfigModal from "@/components/quiz/quiz-config-modal"
 
 const features = [
   {
@@ -28,9 +30,16 @@ const features = [
 ] as const
 
 export default function HomeRoute() {
+  const [isQuizConfigOpen, setIsQuizConfigOpen] = useState(false)
+
   return (
     <div className="flex min-h-dvh flex-col justify-center">
       <Header />
+      <QuizConfigModal
+        open={isQuizConfigOpen}
+        onOpenChange={setIsQuizConfigOpen}
+        onStart={() => setIsQuizConfigOpen(false)}
+      />
       <main className="relative flex flex-1 flex-col justify-center overflow-hidden">
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(74,222,128,0.08),transparent_42%),radial-gradient(circle_at_center,rgba(255,168,0,0.05),transparent_30%)]" />
@@ -84,8 +93,10 @@ export default function HomeRoute() {
 
               <div className="pt-2">
                 <Button
+                  type="button"
                   size="lg"
                   className="h-11 rounded-xl px-6 text-sm font-semibold shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
+                  onClick={() => setIsQuizConfigOpen(true)}
                 >
                   Começar a Estudar
                   <ArrowRight className="size-4" />

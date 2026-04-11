@@ -1,0 +1,193 @@
+import { useMemo, useState } from "react"
+import { Check, Funnel } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
+import { CLF_002_DOMAINS, type DomainCode } from "@/types/exam"
+
+const questionOptions = [10, 20, 40, 65] as const
+
+type QuizConfig = {
+  questionCount: number
+  domains: string[]
+}
+
+const domainOptions = Object.keys(CLF_002_DOMAINS) as DomainCode[]
+
+type QuizConfigModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onStart?: (config: QuizConfig) => void
+}
+
+export default function QuizConfigModal({
+  open,
+  onOpenChange,
+  onStart,
+}: QuizConfigModalProps) {
+  const [questionCount, setQuestionCount] = useState<number>(0)
+  const [selectedDomains, setSelectedDomains] = useState<DomainCode[]>([
+    ...domainOptions,
+  ])
+
+  const selectedDomainSet = useMemo(
+    () => new Set(selectedDomains),
+    [selectedDomains]
+  )
+
+  const canStart = selectedDomains.length > 0 && questionCount > 0
+
+  function toggleDomain(domain: DomainCode) {
+    setSelectedDomains((currentDomains) => {
+      const hasDomain = currentDomains.includes(domain)
+
+      if (hasDomain) {
+        if (currentDomains.length === 1) {
+          return currentDomains
+        }
+
+        return currentDomains.filter(
+          (currentDomain) => currentDomain !== domain
+        )
+      }
+
+      return [...currentDomains, domain]
+    })
+  }
+
+  function handleSelectAll() {
+    setSelectedDomains([...domainOptions])
+  }
+
+  function handleStart() {
+    if (!canStart) {
+      return
+    }
+
+    onStart?.({
+      questionCount,
+      domains: selectedDomains,
+    })
+
+    onOpenChange(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(nextOpen) => onOpenChange(nextOpen)}>
+      <DialogContent className="gap-8">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-semibold">
+            Configurar Quiz
+          </DialogTitle>
+          <DialogDescription>
+            Personalize sua sessão de prática
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Número de questões</p>
+
+          <div className="grid grid-cols-4 gap-2">
+            {questionOptions.map((option) => {
+              const isSelected = option === questionCount
+
+              return (
+                <label key={option} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="questionCount"
+                    value={option}
+                    checked={isSelected}
+                    onChange={() => setQuestionCount(option)}
+                    className="peer sr-only"
+                  />
+                  <span
+                    className={cn(
+                      "inline-flex h-10 w-full items-center justify-center rounded-xl border px-0 text-base font-medium transition-all",
+                      isSelected
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-muted/10 bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    )}
+                  >
+                    {option}
+                  </span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Funnel className="size-4" />
+              <span>Filtrar por Domínio</span>
+            </div>
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              className="h-auto px-0 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground"
+              onClick={handleSelectAll}
+            >
+              Selecionar Todos
+            </Button>
+          </div>
+
+          <div className="p-2">
+            <div className="space-y-1.5">
+              {Object.entries(CLF_002_DOMAINS).map(([domain, label]) => {
+                const isSelected = selectedDomainSet.has(domain as DomainCode)
+                return (
+                  <label
+                    key={domain}
+                    className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  >
+                    <span className="relative inline-flex size-6 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleDomain(domain as DomainCode)}
+                        className="peer absolute inset-0 size-full cursor-pointer appearance-none rounded-[6px] border border-secondary bg-muted/10 checked:border-primary checked:bg-primary hover:border-muted/25"
+                      />
+                      <Check className="pointer-events-none relative z-10 size-4 text-foreground opacity-0 peer-checked:opacity-100" />
+                    </span>
+                    <span>{label}</span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <DialogClose
+            type="button"
+            className="hover:border-secoundary inline-flex items-center justify-center rounded-md border border-secondary text-base text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
+          >
+            Cancelar
+          </DialogClose>
+
+          <Button
+            type="button"
+            size="lg"
+            onClick={handleStart}
+            disabled={!canStart}
+          >
+            Iniciar
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+export type { QuizConfig }

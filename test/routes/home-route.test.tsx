@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import "@testing-library/jest-dom"
 import { describe, expect, test, vi } from "vitest"
 import HomeRoute from "@/routes/home-route"
@@ -45,4 +45,14 @@ describe("HomeRoute", () => {
 
     expect(screen.getByTestId("header")).toBeInTheDocument()
   })
+
+    test("abre o modal de configuração ao clicar no CTA", () => {
+      render(<HomeRoute />)
+
+      fireEvent.click(screen.getByRole("button", { name: /Começar a Estudar/i }))
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument()
+      expect(screen.getByText("Configurar Quiz")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Iniciar" })).toBeInTheDocument()
+    })
 })
