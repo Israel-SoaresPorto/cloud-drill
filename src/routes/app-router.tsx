@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from "react-router"
 import HomeRoute from "./home-route"
 import MainLayout from "@/components/layout/main-layout"
+import QuizPage from "./quiz-route"
 
 export const appRouter = createBrowserRouter([
   {
@@ -10,6 +11,10 @@ export const appRouter = createBrowserRouter([
       {
         index: true,
         element: <HomeRoute />,
+      },
+      {
+        path: "quiz",
+        element: <QuizPage />,
       },
     ],
   },

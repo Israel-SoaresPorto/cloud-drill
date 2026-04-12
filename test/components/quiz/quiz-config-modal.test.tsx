@@ -3,6 +3,7 @@ import "@testing-library/jest-dom"
 import { describe, expect, test, vi, beforeEach } from "vitest"
 
 import QuizConfigModal from "@/components/quiz/quiz-config-modal"
+import { CLF_002_DISTRIBUTION } from "@/types/domains"
 
 describe("QuizConfigModal", () => {
   beforeEach(() => {
@@ -50,7 +51,11 @@ describe("QuizConfigModal", () => {
     fireEvent.click(screen.getByRole("button", { name: "Iniciar" }))
 
     expect(onStart).toHaveBeenCalledWith({
-      questionCount: 20,
+      mode: "practice",
+      exam: "CLF_002",
+      duration: null,
+      totalQuestions: 20,
+      distribution: CLF_002_DISTRIBUTION,
       domains: [
         "CLF_002-cloud-concepts",
         "CLF_002-security-and-compliance",
@@ -69,24 +74,46 @@ describe("QuizConfigModal", () => {
     expect(startButton).toBeDisabled()
   })
 
-  test("permite iniciar o quiz com pelos menos um domínio selecionado", () => {
+  test("monta distribuição somente com domínios selecionados", () => {
     const onStart = vi.fn()
 
     render(
       <QuizConfigModal open={true} onOpenChange={vi.fn()} onStart={onStart} />
     )
 
-    fireEvent.click(screen.getByRole("radio", { name: "40" }))
-    fireEvent.click(screen.getByRole("checkbox", { name: "Conceitos de Nuvem" }))
-    fireEvent.click(screen.getByRole("checkbox", { name: "Tecnologia e Serviços de Nuvem" }))
-    fireEvent.click(screen.getByRole("checkbox", { name: "Cobranças, Preços e Suporte" }))
+    fireEvent.click(screen.getByRole("radio", { name: "10" }))
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Cobranças, Preços e Suporte" })
+    )
 
     fireEvent.click(screen.getByRole("button", { name: "Iniciar" }))
 
     expect(onStart).toHaveBeenCalledWith({
-      questionCount: 40,
-      domains: ["CLF_002-security-and-compliance"],
+      mode: "practice",
+      exam: "CLF_002",
+      duration: null,
+      totalQuestions: 10,
+      distribution: {
+        "CLF_002-cloud-concepts": 0.28,
+        "CLF_002-security-and-compliance": 0.24,
+        "CLF_002-aws-technologies": 0.36,
+      },
+      domains: [
+        "CLF_002-cloud-concepts",
+        "CLF_002-security-and-compliance",
+        "CLF_002-aws-technologies",
+      ],
     })
+  })
+
+  test("exibe o aviso sobre variação de questões", () => {
+    render(
+      <QuizConfigModal open={true} onOpenChange={vi.fn()} onStart={vi.fn()} />
+    )
+
+    expect(screen.getByRole("note")).toHaveTextContent(
+      /Aviso: A quantidade de questões disponíveis para prática pode variar/i
+    )
   })
 
   test("fecha o modal ao clicar em cancelar ou no botão de fechar", () => {
@@ -105,5 +132,31 @@ describe("QuizConfigModal", () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(false)
     expect(onOpenChange).toHaveBeenCalledTimes(2)
+  })
+
+  test("permite selecionar e desmarcar domínios individualmente", () => {
+    const onStart = vi.fn()
+
+    render(
+      <QuizConfigModal open={true} onOpenChange={vi.fn()} onStart={onStart} />
+    )
+
+    const cloudConceptsCheckbox = screen.getByRole("checkbox", {
+      name: "Conceitos de Nuvem",
+    })
+    const securityComplianceCheckbox = screen.getByRole("checkbox", {
+      name: "Segurança e Conformidade",
+    })
+
+    fireEvent.click(cloudConceptsCheckbox)
+    fireEvent.click(securityComplianceCheckbox)
+
+    expect(cloudConceptsCheckbox).not.toBeChecked()
+    expect(securityComplianceCheckbox).not.toBeChecked()
+
+    fireEvent.click(cloudConceptsCheckbox)
+
+    expect(cloudConceptsCheckbox).toBeChecked()
+    expect(securityComplianceCheckbox).not.toBeChecked()
   })
 })

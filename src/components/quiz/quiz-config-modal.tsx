@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react"
 import { Check, Funnel } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,14 +10,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { CLF_002_DOMAINS, type DomainCode } from "@/types/exam"
+import {
+  CLF_002_DISTRIBUTION,
+  CLF_002_DOMAINS,
+  type DomainCode,
+  type DomainDistribution,
+} from "@/types/domains"
+import type { QuizConfig } from "@/types/quiz"
 
 const questionOptions = [10, 20, 40, 65] as const
-
-type QuizConfig = {
-  questionCount: number
-  domains: string[]
-}
 
 const domainOptions = Object.keys(CLF_002_DOMAINS) as DomainCode[]
 
@@ -72,8 +72,18 @@ export default function QuizConfigModal({
       return
     }
 
+    const distribution = Object.fromEntries(
+      Object.entries(CLF_002_DISTRIBUTION).filter(([domain]) =>
+        selectedDomainSet.has(domain as DomainCode)
+      )
+    ) as DomainDistribution
+
     onStart?.({
-      questionCount,
+      mode: "practice",
+      exam: "CLF_002",
+      duration: null,
+      totalQuestions: questionCount,
+      distribution,
       domains: selectedDomains,
     })
 
@@ -166,6 +176,10 @@ export default function QuizConfigModal({
               })}
             </div>
           </div>
+          <p role="note" className="text-xs text-muted-foreground">
+            Aviso: A quantidade de questões disponíveis para prática pode variar
+            dependendo dos domínios selecionados.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">

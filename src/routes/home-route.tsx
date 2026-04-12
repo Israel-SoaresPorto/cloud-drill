@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { ArrowRight, BookmarkCheck, BookOpen, Timer } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,12 @@ import {
 } from "@/components/ui/card"
 import Header from "@/components/layout/header"
 import QuizConfigModal from "@/components/quiz/quiz-config-modal"
+import { useNavigate } from "react-router"
+import type { QuizConfig } from "@/types/quiz"
+import { loadQuestionsForExam } from "@/lib/question"
+import { selectExamQuestions } from "@/lib/quiz"
+import { useQuizStore } from "@/features/quiz/stores/quiz.store"
+import { cn } from "@/lib/utils"
 
 const features = [
   {
@@ -31,6 +37,59 @@ const features = [
 
 export default function HomeRoute() {
   const [isQuizConfigOpen, setIsQuizConfigOpen] = useState(false)
+  const navigate = useNavigate()
+  const [isStartingQuiz, setIsStartingQuiz] = useState(false)
+  const startQuiz = useQuizStore((state) => state.startSession)
+
+  const handleStartQuiz = useCallback(
+    (config: QuizConfig) => {
+      setIsStartingQuiz(true)
+      setIsQuizConfigOpen(false)
+
+      const loadedQuestions = loadQuestionsForExam(config.exam)
+      let practiceQuestions = loadedQuestions
+
+      if (config.domains.length < 4 && config.domains.length > 0) {
+        practiceQuestions = loadedQuestions.filter((q) => {
+          let included = false
+
+          config.domains.forEach((domain) => {
+            if (q.domainCode === domain) {
+              included = true
+              return true
+            }
+          })
+
+          return included
+        })
+
+        config.totalQuestions = Math.min(
+          config.totalQuestions,
+          practiceQuestions.length
+        )
+      }
+
+      const selectedQuestions = selectExamQuestions(
+        config.exam,
+        practiceQuestions,
+        config.distribution,
+        config.totalQuestions
+      )
+
+      startQuiz({
+        exam: config.exam,
+        questions: selectedQuestions,
+        mode: config.mode,
+        questionCount: config.totalQuestions,
+        domains: config.domains,
+      })
+
+      setTimeout(() => {
+        navigate("/quiz")
+      }, 500)
+    },
+    [navigate, startQuiz]
+  )
 
   return (
     <div className="flex min-h-dvh flex-col justify-center">
@@ -38,9 +97,16 @@ export default function HomeRoute() {
       <QuizConfigModal
         open={isQuizConfigOpen}
         onOpenChange={setIsQuizConfigOpen}
-        onStart={() => setIsQuizConfigOpen(false)}
+        onStart={handleStartQuiz}
       />
-      <main className="relative flex flex-1 flex-col justify-center overflow-hidden">
+
+      <main
+        className={cn(
+          "relative flex flex-1 flex-col justify-center overflow-hidden transition-opacity duration-300",
+          isStartingQuiz && "pointer-events-none opacity-60",
+          !isStartingQuiz && "opacity-100"
+        )}
+      >
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(74,222,128,0.08),transparent_42%),radial-gradient(circle_at_center,rgba(255,168,0,0.05),transparent_30%)]" />
           <div className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
