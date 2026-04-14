@@ -63,7 +63,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
 
     set({
       session,
-      isRevealed: config.mode === "practice", // já revela no modo prática
+      isRevealed: false,
       timeRemaining: session.timeLimit || null,
     })
   },

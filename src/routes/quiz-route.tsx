@@ -1,5 +1,6 @@
 import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 import { Navigate } from "react-router"
+import QuizLayout from "@/features/quiz/components/quiz-layout"
 
 export default function QuizPage() {
   const session = useQuizStore((state) => state.session)
@@ -8,10 +9,11 @@ export default function QuizPage() {
     return <Navigate to="/" replace />
   }
 
-  return (
-    <div className="flex min-h-dvh flex-col justify-center">
-      <h1 className="text-2xl font-bold">Quiz Page</h1>
-      <pre>{JSON.stringify(session, null, 2)}</pre>
-    </div>
-  )
+  const currentQuestion = session.questions[session.currentIndex]
+
+  if (!currentQuestion) {
+    return <Navigate to="/" replace />
+  }
+
+  return <QuizLayout session={session} />
 }

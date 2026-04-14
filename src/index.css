@@ -63,12 +63,14 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --breakpoint-xs: 480px;
 }
 
 :root {
   /* Backgrounds */
   --bg-deep: oklch(0.9547 0.0188 292.61);
-  --bg-card: oklch(0.9783 0.0067 295.45);
+  --bg-card: oklch(0.946 0.02026 292.037);
   --bg-option: oklch(0.9289 0.0217 294.58);
   --bg-option-hover: oklch(0.8967 0.0305 298.24);
 
@@ -89,7 +91,7 @@
   /* Shadcn/UI variables */
   --background: oklch(0.9783 0.0067 295.45);
   --foreground: oklch(0.2157 0.0293 292.95);
-  --card: oklch(0.9547 0.0188 292.61);
+  --card: oklch(0.946 0.02026 292.037);
   --card-foreground: oklch(0.15 0.02 280);
   --popover: oklch(0.9547 0.0188 292.61);
   --popover-foreground: oklch(0.15 0.02 280);

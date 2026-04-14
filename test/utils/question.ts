@@ -1,23 +1,18 @@
+import { CLF_002_DOMAINS } from "@/types/domains"
 import type { Question } from "@/types/question"
 
 export function makeQuestion(
   id: string,
   domainCode: Question["domainCode"],
+  type: Question["type"] = "single",
   correctAnswers: Question["correctAnswers"] = ["a"]
 ): Question {
   return {
     id: `CLF_002-question-${id}`,
     exam: "cloud-practitioner",
-    domain:
-      domainCode === "CLF_002-cloud-concepts"
-        ? "Conceitos de Nuvem"
-        : domainCode === "CLF_002-security-and-compliance"
-          ? "Segurança e Conformidade"
-          : domainCode === "CLF_002-aws-technologies"
-            ? "Tecnologia e Serviços de Nuvem"
-            : "Cobranças, Preços e Suporte",
+    domain: CLF_002_DOMAINS[domainCode],
     domainCode,
-    type: "single",
+    type,
     question: `Question ${id}`,
     options: [
       { id: "a", text: "A" },
