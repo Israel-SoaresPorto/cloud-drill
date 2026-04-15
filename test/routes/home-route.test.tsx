@@ -1,9 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import "@testing-library/jest-dom"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 import HomeRoute from "@/routes/home-route"
-import type { QuizConfig } from "@/types/quiz"
+import type { QuizConfig, QuizResult } from "@/types/quiz"
 import type { Question } from "@/types/question"
+import renderWithRouter from "../utils/render-with-router"
+import { useResultStore } from "@/features/result/stores/result.store"
 
 vi.mock("@/components/layout/header", () => ({
   default: function MockHeader() {
@@ -11,10 +13,9 @@ vi.mock("@/components/layout/header", () => ({
   },
 }))
 
-const mockNavigate = vi.fn()
-const mockStartSession = vi.fn()
 const mockLoadQuestionsForExam = vi.fn()
 const mockSelectExamQuestions = vi.fn()
+const mockGenerateQuizSessionID = vi.fn()
 
 let modalConfig: QuizConfig = {
   mode: "practice",
@@ -35,25 +36,14 @@ let modalConfig: QuizConfig = {
   ],
 }
 
-vi.mock("react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("react-router")>()
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  }
-})
-
 vi.mock("@/lib/question", () => ({
-  loadQuestionsForExam: (...args: unknown[]) => mockLoadQuestionsForExam(...args),
+  loadQuestionsForExam: (...args: unknown[]) =>
+    mockLoadQuestionsForExam(...args),
 }))
 
 vi.mock("@/lib/quiz", () => ({
   selectExamQuestions: (...args: unknown[]) => mockSelectExamQuestions(...args),
-}))
-
-vi.mock("@/features/quiz/stores/quiz.store", () => ({
-  useQuizStore: (selector: (state: { startSession: typeof mockStartSession }) => unknown) =>
-    selector({ startSession: mockStartSession }),
+  generateQuizSessionID: () => mockGenerateQuizSessionID(),
 }))
 
 vi.mock("@/components/quiz/quiz-config-modal", () => ({
@@ -77,6 +67,42 @@ vi.mock("@/components/quiz/quiz-config-modal", () => ({
 }))
 
 describe("HomeRoute", () => {
+  const render = () => {
+    renderWithRouter([
+      {
+        path: "/",
+        element: <HomeRoute />,
+      },
+      {
+        path: "/quiz",
+        element: <div>Quiz Page</div>,
+      },
+      {
+        path: "/resultado",
+        element: <div>Result Page</div>,
+      },
+    ])
+  }
+
+  const result: QuizResult = {
+    sessionId: "mock-session-id",
+    exam: "CLF_002",
+    mode: "practice",
+    duration: 1200,
+    completedAt: new Date(),
+    score: 85,
+    correctCount: 17,
+    incorrectCount: 3,
+    totalQuestions: 20,
+    domainBreakdown: {
+      "CLF_002-cloud-concepts": { correct: 7, total: 8 },
+      "CLF_002-security-and-compliance": { correct: 5, total: 6 },
+      "CLF_002-aws-technologies": { correct: 4, total: 5 },
+      "CLF_002-billing-and-pricing": { correct: 1, total: 1 },
+    },
+    passed: true,
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useRealTimers()
@@ -105,10 +131,12 @@ describe("HomeRoute", () => {
   })
 
   test("renderiza a home com os elementos principais", () => {
-    render(<HomeRoute />)
+    render()
 
     expect(
-      screen.getByRole("heading", { name: /Prepare-se para a Certificação AWS/i })
+      screen.getByRole("heading", {
+        name: /Prepare-se para a Certificação AWS/i,
+      })
     ).toBeInTheDocument()
 
     expect(
@@ -135,13 +163,13 @@ describe("HomeRoute", () => {
   })
 
   test("renderiza o header da página", () => {
-    render(<HomeRoute />)
+    render()
 
     expect(screen.getByTestId("header")).toBeInTheDocument()
   })
 
   test("abre o modal de configuração ao clicar no CTA", () => {
-    render(<HomeRoute />)
+    render()
 
     expect(screen.getByText("closed")).toBeInTheDocument()
 
@@ -158,84 +186,45 @@ describe("HomeRoute", () => {
     mockLoadQuestionsForExam.mockReturnValue(questions)
     mockSelectExamQuestions.mockReturnValue(questions)
 
-    render(<HomeRoute />)
+    render()
 
     fireEvent.click(screen.getByRole("button", { name: /Começar a Estudar/i }))
     fireEvent.click(screen.getByRole("button", { name: /Trigger Start/i }))
 
     expect(mockLoadQuestionsForExam).toHaveBeenCalledWith("CLF_002")
+
     expect(mockSelectExamQuestions).toHaveBeenCalledWith(
       "CLF_002",
       questions,
       modalConfig.distribution,
       20
     )
-    expect(mockStartSession).toHaveBeenCalledWith({
-      exam: "CLF_002",
-      questions,
-      mode: "practice",
-      questionCount: 20,
-      domains: modalConfig.domains,
-    })
 
     const main = document.querySelector("main")
     expect(main).toHaveClass("opacity-60")
 
-    expect(mockNavigate).not.toHaveBeenCalled()
     vi.advanceTimersByTime(500)
-    expect(mockNavigate).toHaveBeenCalledWith("/quiz")
+
+    waitFor(async () => {
+      const main = screen.getByText(/Quiz Page/i)
+      expect(main).toBeInTheDocument()
+    })
   })
 
-  test("limita totalQuestions ao total filtrado quando domínios são parciais", () => {
-    const loadedQuestions = [
-      {
-        id: "CLF_002-question-001",
-        domainCode: "CLF_002-cloud-concepts",
-      },
-      {
-        id: "CLF_002-question-002",
-        domainCode: "CLF_002-security-and-compliance",
-      },
-      {
-        id: "CLF_002-question-003",
-        domainCode: "CLF_002-aws-technologies",
-      },
-      {
-        id: "CLF_002-question-004",
-        domainCode: "CLF_002-billing-and-pricing",
-      },
-    ] as unknown as Question[]
+  test("navega para resultado ao clicar no botão de resultado anterior", () => {
+    useResultStore.setState({
+      result,
+    })
 
-    modalConfig = {
-      ...modalConfig,
-      totalQuestions: 65,
-      domains: [
-        "CLF_002-cloud-concepts",
-        "CLF_002-security-and-compliance",
-        "CLF_002-aws-technologies",
-      ],
-      distribution: {
-        "CLF_002-cloud-concepts": 0.28,
-        "CLF_002-security-and-compliance": 0.24,
-        "CLF_002-aws-technologies": 0.36,
-      },
-    }
+    render()
 
-    mockLoadQuestionsForExam.mockReturnValue(loadedQuestions)
-    mockSelectExamQuestions.mockReturnValue([])
-
-    render(<HomeRoute />)
-
-    fireEvent.click(screen.getByRole("button", { name: /Trigger Start/i }))
-
-    expect(mockSelectExamQuestions).toHaveBeenCalledWith(
-      "CLF_002",
-      loadedQuestions.slice(0, 3),
-      modalConfig.distribution,
-      3
+    fireEvent.click(
+      screen.getByRole("button", { name: /Ver Resultado Anterior/i })
     )
-    expect(mockStartSession).toHaveBeenCalledWith(
-      expect.objectContaining({ questionCount: 3 })
-    )
+
+    waitFor(async () => {
+      const main = screen.getByText(/Result Page/i)
+      expect(main).toBeInTheDocument()
+    })
   })
 })

@@ -16,6 +16,7 @@ import { loadQuestionsForExam } from "@/lib/question"
 import { selectExamQuestions } from "@/lib/quiz"
 import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 import { cn } from "@/lib/utils"
+import { useResultStore } from "@/features/result/stores/result.store"
 
 const features = [
   {
@@ -40,6 +41,7 @@ export default function HomeRoute() {
   const navigate = useNavigate()
   const [isStartingQuiz, setIsStartingQuiz] = useState(false)
   const startQuiz = useQuizStore((state) => state.startSession)
+  const result = useResultStore((state) => state.result)
 
   const handleStartQuiz = useCallback(
     (config: QuizConfig) => {
@@ -157,16 +159,27 @@ export default function HomeRoute() {
                 ))}
               </div>
 
-              <div className="pt-2">
+              <div className="flex gap-4 pt-2">
                 <Button
                   type="button"
                   size="lg"
-                  className="h-11 rounded-xl px-6 text-sm font-semibold shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
+                  className="shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
                   onClick={() => setIsQuizConfigOpen(true)}
                 >
                   Começar a Estudar
                   <ArrowRight className="size-4" />
                 </Button>
+                {result && (
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="secondary"
+                    className="shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
+                    onClick={() => navigate("/resultado", { replace: true })}
+                  >
+                    Ver Resultado Anterior
+                  </Button>
+                )}
               </div>
             </div>
           </section>

@@ -21,6 +21,10 @@ function renderLayout(session: QuizSession) {
         element: <QuizLayout session={session} />,
       },
       {
+        path: "/resultado",
+        element: <div>Resultado</div>,
+      },
+      {
         path: "/",
         element: <div>Home</div>,
       },
@@ -248,8 +252,8 @@ describe("QuizLayout", () => {
     )
 
     waitFor(async () => {
-      const home = await screen.getByText("Home")
-      expect(home).toBeInTheDocument()
+      const result = await screen.getByText("Resultado")
+      expect(result).toBeInTheDocument()
     })
   })
 
@@ -282,8 +286,8 @@ describe("QuizLayout", () => {
     fireEvent.click(screen.getByRole("button", { name: "Finalizar" }))
 
     waitFor(async () => {
-      const home = await screen.getByText("Home")
-      expect(home).toBeInTheDocument()
+      const result = await screen.getByText("Resultado")
+      expect(result).toBeInTheDocument()
     })
   })
 

@@ -8,9 +8,9 @@ import { formatTimerLabel } from "@/lib/utils"
 import type { QuizSession } from "@/types/quiz"
 import { Progress } from "@/components/ui/progress"
 import { useMemo, useState } from "react"
-import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router"
 import QuizAlert from "@/components/alert"
+import { useResultStore } from "../../result/stores/result.store"
 
 interface QuizLayoutProps {
   session: QuizSession
@@ -26,9 +26,8 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   const endSession = useQuizStore((state) => state.endSession)
   const clearSession = useQuizStore((state) => state.clearSession)
   const timeRemaining = useQuizStore((state) => state.timeRemaining)
-  const [finalizedResult, setFinalizedResult] = useState<ReturnType<
-    typeof endSession
-  > | null>(null)
+  const setResult = useResultStore((state) => state.setResult)
+
   const [draftAnswers, setDraftAnswers] = useState<Record<string, OptionsID[]>>(
     {}
   )
@@ -76,9 +75,10 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
 
   const handleFinish = () => {
     const result = endSession()
-    setFinalizedResult(result)
+    setResult(result)
     console.log("Quiz finalizado:", result)
     clearSession()
+    navigate("/result", { replace: true })
   }
 
   const handleQuizComplete = () => {
@@ -97,35 +97,6 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   const handleExit = () => {
     clearSession()
     navigate("/", { replace: true })
-  }
-
-  if (finalizedResult) {
-    return (
-      <div className="min-h-dvh bg-deep px-6 py-10 md:px-8 lg:px-12">
-        <div className="mx-auto w-full max-w-3xl rounded-xl border border-idle bg-card p-6 md:p-8">
-          <h1 className="text-2xl font-bold text-primary-tx">
-            Resultado Final
-          </h1>
-          <p className="mt-2 text-secondary-tx">
-            Você acertou {finalizedResult.correctCount} de{" "}
-            {finalizedResult.totalQuestions} questões.
-          </p>
-          <p className="mt-4 text-lg font-semibold text-primary-tx">
-            Pontuação: {finalizedResult.score}% (
-            {finalizedResult.passed ? "Aprovado" : "Não aprovado"})
-          </p>
-
-          <Button
-            type="button"
-            size="lg"
-            className="mt-8 bg-accent-orange text-[#0e0c1a] hover:bg-accent-orange/90"
-            onClick={() => navigate("/", { replace: true })}
-          >
-            Voltar ao início
-          </Button>
-        </div>
-      </div>
-    )
   }
 
   return (

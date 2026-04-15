@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
-import QuizAlert from "@/components/alert"
+import Alert from "@/components/alert"
 
-describe("QuizAlert", () => {
+describe("Alert", () => {
   test("renderiza conteúdo e confirma ação", () => {
     const onConfirm = vi.fn()
 
     render(
-      <QuizAlert
+      <Alert
         title="Sair do quiz"
         description="Seu progresso será perdido"
         open
