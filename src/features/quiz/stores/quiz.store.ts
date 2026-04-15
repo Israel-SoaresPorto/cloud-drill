@@ -15,7 +15,7 @@ import type {
 } from "@/types/domains"
 import { generateQuizSessionID } from "@/lib/quiz"
 
-interface QuizState {
+export interface QuizState {
   // Estado
   session: QuizSession | null
   isRevealed: boolean // feedback visível?

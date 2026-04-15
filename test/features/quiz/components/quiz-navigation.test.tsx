@@ -50,6 +50,27 @@ describe("QuizNavigation", () => {
     expect(onNext).toHaveBeenCalledTimes(1)
   })
 
+  test("retorna para questão anterior quando respondida", () => {
+    const onPrevious = vi.fn()
+
+    render(
+      <QuizNavigation
+        canGoPrevious={true}
+        canGoNext={true}
+        canConfirm={false}
+        isAnswered
+        onPrevious={onPrevious}
+        onNext={vi.fn()}
+        onConfirm={vi.fn()}
+      />
+    )
+
+    const previousButton = screen.getByRole("button", { name: "Anterior" })
+    fireEvent.click(previousButton)
+
+    expect(onPrevious).toHaveBeenCalledTimes(1)
+  })
+
   test("desabilita próxima quando respondida mas sem próximo índice", () => {
     render(
       <QuizNavigation

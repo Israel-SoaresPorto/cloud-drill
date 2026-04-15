@@ -1,24 +1,24 @@
 import { beforeEach, describe, expect, test, vi } from "vitest"
-import { createStore } from "zustand/vanilla"
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
 import {
   quizStoreCreator,
-  useQuizStore,
+  type QuizState,
 } from "@/features/quiz/stores/quiz.store"
 import * as quizLib from "@/lib/quiz"
 import { makeQuestion } from "../../../utils/question"
 
-describe("quiz store", () => {
+describe("Quiz Store - Logic", () => {
+  const useQuizStore = create<QuizState>(quizStoreCreator)
+
   beforeEach(() => {
-    vi.restoreAllMocks()
-    localStorage.clear()
     useQuizStore.getState().clearSession()
   })
 
   test("startSession inicializa sessão de prática sem revelar feedback", () => {
-    const store = createStore(quizStoreCreator)
     vi.spyOn(quizLib, "generateQuizSessionID").mockReturnValue("session-1")
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts"],
       questionCount: 1,
@@ -26,7 +26,7 @@ describe("quiz store", () => {
       questions: [makeQuestion("001", "CLF_002-cloud-concepts")],
     })
 
-    const state = store.getState()
+    const state = useQuizStore.getState()
 
     expect(state.session?.id).toBe("session-1")
     expect(state.session?.mode).toBe("practice")
@@ -36,9 +36,7 @@ describe("quiz store", () => {
   })
 
   test("startSession em modo simulado define limite e tempo restante", () => {
-    const store = createStore(quizStoreCreator)
-
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts"],
       questionCount: 1,
@@ -46,18 +44,17 @@ describe("quiz store", () => {
       questions: [makeQuestion("001", "CLF_002-cloud-concepts")],
     })
 
-    expect(store.getState().session?.timeLimit).toBe(90 * 60)
-    expect(store.getState().timeRemaining).toBe(90 * 60)
+    expect(useQuizStore.getState().session?.timeLimit).toBe(90 * 60)
+    expect(useQuizStore.getState().timeRemaining).toBe(90 * 60)
   })
 
   test("submitAnswer marca correta e incorreta", () => {
-    const store = createStore(quizStoreCreator)
     const question = makeQuestion("001", "CLF_002-cloud-concepts", "multiple", [
       "a",
       "b",
     ])
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts"],
       questionCount: 1,
@@ -65,17 +62,19 @@ describe("quiz store", () => {
       questions: [question],
     })
 
-    store.getState().submitAnswer(question.id, ["a", "b"])
-    expect(store.getState().session?.answers[question.id].isCorrect).toBe(true)
+    useQuizStore.getState().submitAnswer(question.id, ["a", "b"])
+    expect(
+      useQuizStore.getState().session?.answers[question.id].isCorrect
+    ).toBe(true)
 
-    store.getState().submitAnswer(question.id, ["a"])
-    expect(store.getState().session?.answers[question.id].isCorrect).toBe(false)
+    useQuizStore.getState().submitAnswer(question.id, ["a"])
+    expect(
+      useQuizStore.getState().session?.answers[question.id].isCorrect
+    ).toBe(false)
   })
 
   test("submitAnswer ignora questão inexistente", () => {
-    const store = createStore(quizStoreCreator)
-
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts"],
       questionCount: 1,
@@ -83,17 +82,16 @@ describe("quiz store", () => {
       questions: [makeQuestion("001", "CLF_002-cloud-concepts")],
     })
 
-    store.getState().submitAnswer("CLF_002-question-999" as const, ["a"])
+    useQuizStore.getState().submitAnswer("CLF_002-question-999" as const, ["a"])
 
-    expect(store.getState().session?.answers).toEqual({})
+    expect(useQuizStore.getState().session?.answers).toEqual({})
   })
 
   test("nextQuestion e previousQuestion respeitam limites e isRevealed", () => {
-    const store = createStore(quizStoreCreator)
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts", "CLF_002-security-and-compliance"],
       questionCount: 2,
@@ -101,28 +99,27 @@ describe("quiz store", () => {
       questions: [q1, q2],
     })
 
-    expect(store.getState().session?.currentIndex).toBe(0)
-    expect(store.getState().isRevealed).toBe(false)
+    expect(useQuizStore.getState().session?.currentIndex).toBe(0)
+    expect(useQuizStore.getState().isRevealed).toBe(false)
 
-    store.getState().nextQuestion()
-    expect(store.getState().session?.currentIndex).toBe(1)
-    expect(store.getState().isRevealed).toBe(false)
+    useQuizStore.getState().nextQuestion()
+    expect(useQuizStore.getState().session?.currentIndex).toBe(1)
+    expect(useQuizStore.getState().isRevealed).toBe(false)
 
-    store.getState().submitAnswer(q1.id, ["a"])
-    store.getState().previousQuestion()
-    expect(store.getState().session?.currentIndex).toBe(0)
-    expect(store.getState().isRevealed).toBe(true)
+    useQuizStore.getState().submitAnswer(q1.id, ["a"])
+    useQuizStore.getState().previousQuestion()
+    expect(useQuizStore.getState().session?.currentIndex).toBe(0)
+    expect(useQuizStore.getState().isRevealed).toBe(true)
 
-    store.getState().previousQuestion()
-    expect(store.getState().session?.currentIndex).toBe(0)
+    useQuizStore.getState().previousQuestion()
+    expect(useQuizStore.getState().session?.currentIndex).toBe(0)
   })
 
   test("nextQuestion não ultrapassa limite superior", () => {
-    const store = createStore(quizStoreCreator)
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts", "CLF_002-security-and-compliance"],
       questionCount: 2,
@@ -130,18 +127,17 @@ describe("quiz store", () => {
       questions: [q1, q2],
     })
 
-    store.getState().nextQuestion()
-    store.getState().nextQuestion()
+    useQuizStore.getState().nextQuestion()
+    useQuizStore.getState().nextQuestion()
 
-    expect(store.getState().session?.currentIndex).toBe(1)
+    expect(useQuizStore.getState().session?.currentIndex).toBe(1)
   })
 
   test("previousQuestion volta com isRevealed false quando questão anterior não foi respondida", () => {
-    const store = createStore(quizStoreCreator)
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts", "CLF_002-security-and-compliance"],
       questionCount: 2,
@@ -149,23 +145,22 @@ describe("quiz store", () => {
       questions: [q1, q2],
     })
 
-    store.getState().nextQuestion()
-    store.getState().submitAnswer(q2.id, ["a"])
-    store.getState().previousQuestion()
+    useQuizStore.getState().nextQuestion()
+    useQuizStore.getState().submitAnswer(q2.id, ["a"])
+    useQuizStore.getState().previousQuestion()
 
-    expect(store.getState().session?.currentIndex).toBe(0)
-    expect(store.getState().isRevealed).toBe(false)
+    expect(useQuizStore.getState().session?.currentIndex).toBe(0)
+    expect(useQuizStore.getState().isRevealed).toBe(false)
   })
 
   test("endSession calcula score e aprovação corretamente", () => {
-    const store = createStore(quizStoreCreator)
     vi.spyOn(Date, "now").mockReturnValueOnce(1000).mockReturnValueOnce(61_000)
 
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
     const q3 = makeQuestion("003", "CLF_002-aws-technologies")
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: [
         "CLF_002-cloud-concepts",
@@ -177,11 +172,11 @@ describe("quiz store", () => {
       questions: [q1, q2, q3],
     })
 
-    store.getState().submitAnswer(q1.id, ["a"])
-    store.getState().submitAnswer(q2.id, ["a"])
-    store.getState().submitAnswer(q3.id, ["b"])
+    useQuizStore.getState().submitAnswer(q1.id, ["a"])
+    useQuizStore.getState().submitAnswer(q2.id, ["a"])
+    useQuizStore.getState().submitAnswer(q3.id, ["b"])
 
-    const result = store.getState().endSession()
+    const result = useQuizStore.getState().endSession()
 
     expect(result.correctCount).toBe(2)
     expect(result.incorrectCount).toBe(1)
@@ -195,7 +190,6 @@ describe("quiz store", () => {
   })
 
   test("endSession considera aprovado com nota de corte igual a 70", () => {
-    const store = createStore(quizStoreCreator)
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
     const q3 = makeQuestion("003", "CLF_002-aws-technologies")
@@ -207,7 +201,7 @@ describe("quiz store", () => {
     const q9 = makeQuestion("009", "CLF_002-cloud-concepts")
     const q10 = makeQuestion("010", "CLF_002-security-and-compliance")
 
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: [
         "CLF_002-cloud-concepts",
@@ -220,10 +214,10 @@ describe("quiz store", () => {
       questions: [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10],
     })
     ;[q1, q2, q3, q4, q5, q6, q7].forEach((q) => {
-      store.getState().submitAnswer(q.id, ["a"])
+      useQuizStore.getState().submitAnswer(q.id, ["a"])
     })
 
-    const result = store.getState().endSession()
+    const result = useQuizStore.getState().endSession()
 
     expect(result.score).toBe(70)
     expect(result.passed).toBe(true)
@@ -231,9 +225,7 @@ describe("quiz store", () => {
   })
 
   test("clearSession reseta estado", () => {
-    const store = createStore(quizStoreCreator)
-
-    store.getState().startSession({
+    useQuizStore.getState().startSession({
       exam: "CLF_002",
       domains: ["CLF_002-cloud-concepts"],
       questionCount: 1,
@@ -241,19 +233,28 @@ describe("quiz store", () => {
       questions: [makeQuestion("001", "CLF_002-cloud-concepts")],
     })
 
-    store.getState().clearSession()
+    useQuizStore.getState().clearSession()
 
-    expect(store.getState().session).toBeNull()
-    expect(store.getState().isRevealed).toBe(false)
-    expect(store.getState().timeRemaining).toBeNull()
+    expect(useQuizStore.getState().session).toBeNull()
+    expect(useQuizStore.getState().isRevealed).toBe(false)
+    expect(useQuizStore.getState().timeRemaining).toBeNull()
   })
 
   test("endSession sem sessão ativa lança erro", () => {
-    const store = createStore(quizStoreCreator)
-
-    expect(() => store.getState().endSession()).toThrow("No active session")
+    expect(() => useQuizStore.getState().endSession()).toThrow(
+      "No active session"
+    )
   })
+})
 
+describe("Quiz Store - Persistence", () => {
+  const useQuizStore = create<QuizState>()(
+    persist(quizStoreCreator, {
+      name: "quiz-session", // chave do localStorage
+      partialize: (state) => ({ session: state.session }), // só persiste a sessão
+    })
+  )
+  
   test("persist salva sessão no localStorage", () => {
     vi.spyOn(quizLib, "generateQuizSessionID").mockReturnValue(
       "session-persist"
