@@ -11,16 +11,22 @@
   --color-option-hover: var(--bg-option-hover); /* Hover nas alternativas */
 
   /* Text & Typography */
-  --color-primary-tx: var(--text-primary); /* Enunciado, títulos, texto principal */
-  --color-secondary-tx: var(--text-secondary); /* Texto das alternativas, labels */
-  --color-muted-tx: var(--text-muted); /* Labels auxiliares, letras das opções */
+  --color-primary-tx: var(
+    --text-primary
+  ); /* Enunciado, títulos, texto principal */
+  --color-secondary-tx: var(
+    --text-secondary
+  ); /* Texto das alternativas, labels */
+  --color-muted-tx: var(
+    --text-muted
+  ); /* Labels auxiliares, letras das opções */
 
   /* Accents & States */
   --color-accent-orange: var(--accent-orange); /* Ação principal */
   --color-accent-cyan: var(--accent-cyan); /* Informação contextual */
   --color-correct: var(--correct); /* Estados de correto */
   --color-wrong: var(--wrong); /* Estado de incorreto  */
-  
+
   --color-idle: var(--border-idle); /* Bordas de inputs e opções em repouso */
 
   --font-body: "Sora", sans-serif;
@@ -69,44 +75,44 @@
 
 :root {
   /* Backgrounds */
-  --bg-deep: oklch(0.9547 0.0188 292.61);
-  --bg-card: oklch(0.946 0.02026 292.037);
-  --bg-option: oklch(0.9289 0.0217 294.58);
-  --bg-option-hover: oklch(0.8967 0.0305 298.24);
+  --bg-deep: oklch(0.9664 0.0174 293.14);
+  --bg-card: oklch(0.98885 0.00104 11.205);
+  --bg-option: oklch(0.9819 0.0093 292.8);
+  --bg-option-hover: oklch(0.9442 0.0191 299.06);
 
   /* Text & Typography */
-  --text-primary: oklch(0.2157 0.0293 292.95);
-  --text-secondary: oklch(0.4673 0.0521 297.25);
-  --text-muted: oklch(0.645 0.0391 297.62);
+  --text-primary: oklch(0.2214 0.0604 287.59);
+  --text-secondary: oklch(0.463 0.0646 292.88);
+  --text-muted: oklch(0.7202 0.0628 296.52);
 
   /* Accents & States */
-  --accent-orange: oklch(0.772 0.1738 64.55);
-  --accent-cyan: oklch(0.6089 0.1109 221.72);
+  --accent-orange: oklch(0.6817 0.162 58.68);
+  --accent-cyan: oklch(0.5865 0.1003 187.8);
   --correct: oklch(0.596 0.1274 163.23);
-  --wrong: oklch(0.5771 0.2152 27.33);
+  --wrong: oklch(0.5433 0.174 29.7);
 
   /* Borders & Inputs */
-  --border-idle: oklch(0.8603 0.0393 298.63);
+  --border-idle: oklch(0.8954 0.0315 293.74);
 
   /* Shadcn/UI variables */
   --background: oklch(0.9783 0.0067 295.45);
-  --foreground: oklch(0.2157 0.0293 292.95);
-  --card: oklch(0.946 0.02026 292.037);
+  --foreground: oklch(0.2214 0.0604 287.59);
+  --card: oklch(0.98885 0.00104 11.205);
   --card-foreground: oklch(0.15 0.02 280);
   --popover: oklch(0.9547 0.0188 292.61);
   --popover-foreground: oklch(0.15 0.02 280);
-  --primary: oklch(0.772 0.1738 64.55);
+  --primary: oklch(0.6817 0.162 58.68);
   --primary-foreground: oklch(0.13441 0.00002 271.152);
-  --secondary: oklch(0.9289 0.0217 294.58);
+  --secondary: oklch(0.9819 0.0093 292.8);
   --secondary-foreground: oklch(0.408 0.06565 297.535);
-  --muted: oklch(0.4673 0.0521 297.25);
-  --muted-foreground: oklch(0.645 0.0391 297.62);
-  --accent: oklch(0.6089 0.1109 221.72);
+  --muted: oklch(0.463 0.0646 292.88);
+  --muted-foreground: oklch(0.7202 0.0628 296.52);
+  --accent: oklch(0.5865 0.1003 187.8);
   --accent-foreground: oklch(0.98 0.01 280);
-  --destructive: oklch(0.5771 0.2152 27.33);
-  --border: oklch(0.8603 0.0393 298.63 / 0.1);
-  --input: oklch(0.8603 0.0393 298.63 / 0.15);
-  --ring: oklch(0.772 0.1738 64.55 / 0.15);
+  --destructive: oklch(0.5433 0.174 29.7);
+  --border: oklch(0.8954 0.0315 293.74 / 0.1);
+  --input: oklch(0.8954 0.0315 293.74 / 0.15);
+  --ring: oklch(0.6817 0.162 58.68 / 0.15);
   --chart-1: oklch(0.865 0.127 207.078);
   --chart-2: oklch(0.715 0.143 215.221);
   --chart-3: oklch(0.609 0.126 221.723);
@@ -151,7 +157,7 @@
   --popover: oklch(0.2037 0.0449 287.71);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.772 0.1738 64.55);
-  --primary-foreground: oklch(0.421 0.095 57.708);
+  --primary-foreground: oklch(0.13441 0.00002 271.152);
   --secondary: oklch(0.2339 0.0528 288.17);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.6315 0.0689 293.3);

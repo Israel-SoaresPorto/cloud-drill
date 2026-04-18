@@ -32,10 +32,13 @@ export default function QuizAlert({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="bg-popover">
-          <AlertDialogCancel variant="secondary">Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            Confirmar
-          </AlertDialogAction>
+          <AlertDialogCancel
+            variant="ghost"
+            className="hover:bg-secondary/50 hover:text-foreground"
+          >
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Confirmar</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

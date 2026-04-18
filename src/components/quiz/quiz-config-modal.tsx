@@ -103,7 +103,7 @@ export default function QuizConfigModal({
         </DialogHeader>
 
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Número de questões</p>
+          <p className="text-sm text-secondary-tx">Número de questões</p>
 
           <div className="grid grid-cols-4 gap-2">
             {questionOptions.map((option) => {
@@ -124,7 +124,7 @@ export default function QuizConfigModal({
                       "inline-flex h-10 w-full items-center justify-center rounded-xl border px-0 text-base font-medium transition-all",
                       isSelected
                         ? "border-primary bg-primary text-primary-foreground"
-                        : "border-muted/10 bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        : "border-muted/10 bg-secondary/50 text-secondary-tx hover:bg-secondary hover:text-foreground"
                     )}
                   >
                     {option}
@@ -137,7 +137,7 @@ export default function QuizConfigModal({
 
         <div className="space-y-1">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-secondary-tx">
               <Funnel className="size-4" />
               <span>Filtrar por Domínio</span>
             </div>
@@ -145,7 +145,7 @@ export default function QuizConfigModal({
               type="button"
               variant="link"
               size="sm"
-              className="h-auto px-0 text-sm text-muted-foreground hover:bg-transparent hover:text-foreground"
+              className="h-auto px-0 text-sm text-secondary-tx hover:text-foreground"
               onClick={handleSelectAll}
             >
               Selecionar Todos
@@ -159,14 +159,14 @@ export default function QuizConfigModal({
                 return (
                   <label
                     key={domain}
-                    className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 text-sm text-secondary-tx transition-colors hover:bg-secondary/40 hover:text-foreground"
                   >
                     <span className="relative inline-flex size-6 items-center justify-center">
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleDomain(domain as DomainCode)}
-                        className="peer absolute inset-0 size-full cursor-pointer appearance-none rounded-[6px] border border-secondary bg-muted/10 checked:border-primary checked:bg-primary hover:border-muted/25"
+                        className="peer absolute inset-0 size-full cursor-pointer appearance-none rounded-sm border border-muted/10 bg-muted/10 checked:border-primary checked:bg-primary hover:border-primary/50"
                       />
                       <Check className="pointer-events-none relative z-10 size-4 text-foreground opacity-0 peer-checked:opacity-100" />
                     </span>
@@ -176,20 +176,14 @@ export default function QuizConfigModal({
               })}
             </div>
           </div>
-          <p role="note" className="text-xs text-muted-foreground">
+          <p role="note" className="text-xs text-secondary-tx">
             Aviso: A quantidade de questões disponíveis para prática pode variar
             dependendo dos domínios selecionados.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <DialogClose
-            type="button"
-            className="hover:border-secoundary inline-flex items-center justify-center rounded-md border border-secondary text-base text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
-          >
-            Cancelar
-          </DialogClose>
-
+          <DialogClose>Cancelar</DialogClose>
           <Button
             type="button"
             size="lg"

@@ -123,14 +123,14 @@ export default function HomeRoute() {
                   <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
                     Prepare-se para a Certificação AWS
                   </h1>
-                  <p className="mx-auto max-w-md text-base leading-7 text-muted-foreground sm:text-lg">
+                  <p className="mx-auto max-w-md text-base leading-7 text-secondary-tx sm:text-lg">
                     Estude para a certificação AWS com quiz interativo
                   </p>
                 </div>
 
                 <Badge
                   variant="outline"
-                  className="border-accent/35 bg-accent/10 px-4 py-2 text-sm text-accent shadow-sm"
+                  className="border-accent-cyan bg-accent-cyan/25 px-4 py-2 text-sm text-accent-cyan shadow-sm"
                 >
                   Cloud Certified Practitioner
                 </Badge>
@@ -140,7 +140,7 @@ export default function HomeRoute() {
                 {features.map(({ icon: Icon, title, description }) => (
                   <Card
                     key={title}
-                    className="border-white/5 bg-card/80 text-left backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:border-white/10"
+                    className="text-left backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5"
                   >
                     <CardHeader className="gap-3 p-5 pb-3">
                       <div className="flex items-center gap-2.5 text-foreground">
@@ -151,7 +151,7 @@ export default function HomeRoute() {
                           {title}
                         </CardTitle>
                       </div>
-                      <CardDescription className="text-sm leading-6 text-muted-foreground">
+                      <CardDescription className="text-sm leading-6 text-muted-tx">
                         {description}
                       </CardDescription>
                     </CardHeader>
@@ -173,8 +173,8 @@ export default function HomeRoute() {
                   <Button
                     type="button"
                     size="lg"
-                    variant="secondary"
-                    className="shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
+                    variant="outline"
+                    className="bg-transparent hover:bg-accent/75 dark:hover:bg-accent/50 shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
                     onClick={() => navigate("/resultado", { replace: true })}
                   >
                     Ver Resultado Anterior
