@@ -78,7 +78,7 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     setResult(result)
     console.log("Quiz finalizado:", result)
     clearSession()
-    navigate("/result", { replace: true })
+    navigate("/resultado", { replace: true })
   }
 
   const handleQuizComplete = () => {

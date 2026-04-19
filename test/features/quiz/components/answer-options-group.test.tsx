@@ -91,8 +91,8 @@ describe("AnswerOptionsGroup", () => {
     const optionA = screen.getByRole("radio", { name: /a\./i }).closest("label")
     const optionB = screen.getByRole("radio", { name: /b\./i }).closest("label")
 
-    expect(optionA?.className).toContain("border-correct")
-    expect(optionB?.className).toContain("border-wrong")
+    expect(optionA).toHaveAttribute("data-answer-state", "correct")
+    expect(optionB).toHaveAttribute("data-answer-state", "wrong")
   })
 
   test("quando revelado marca alternativas corretas e erradas (múltipla escolha)", () => {
@@ -123,10 +123,9 @@ describe("AnswerOptionsGroup", () => {
       .getByRole("checkbox", { name: /d\./i })
       .closest("label")
 
-    expect(optionA?.className).toContain("border-correct")
-    expect(optionB?.className).toContain("border-wrong")
-    expect(optionC?.className).toContain("border-correct")
-    expect(optionD?.className).not.toContain("border-wrong")
-    expect(optionD?.className).not.toContain("border-correct")
+    expect(optionA).toHaveAttribute("data-answer-state", "correct")
+    expect(optionB).toHaveAttribute("data-answer-state", "wrong")
+    expect(optionC).toHaveAttribute("data-answer-state", "correct")
+    expect(optionD).toHaveAttribute("data-answer-state", "idle")
   })
 })

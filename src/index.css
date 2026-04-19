@@ -4,6 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant answer-idle (&[data-answer-state="idle"]);
+@custom-variant answer-selected (&[data-answer-state="selected"]);
+@custom-variant answer-correct (&[data-answer-state="correct"]);
+@custom-variant answer-wrong (&[data-answer-state="wrong"]);
+
+@custom-variant checkbox-checked (&:is(input[type='checkbox']:checked));
+
 @theme inline {
   /* Backgrounds */
   --color-deep: var(--bg-deep); /* Fundo global da aplicação */
@@ -71,6 +78,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 
   --breakpoint-xs: 480px;
+
+  /* --data-answer-idle: [data-answer-state= "idle"]; */
 }
 
 :root {

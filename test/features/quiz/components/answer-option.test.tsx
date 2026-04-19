@@ -64,7 +64,7 @@ describe("AnswerOption", () => {
     expect(label?.className).toContain("cursor-not-allowed")
   })
 
-  test("aplica classe de estado selecionado", () => {
+  test("aplica estado de selecionado", () => {
     render(
       <AnswerOption
         id="q1-a"
@@ -79,10 +79,10 @@ describe("AnswerOption", () => {
     )
 
     const label = screen.getByRole("radio", { name: /a\./i }).closest("label")
-    expect(label?.className).toContain("border-accent-orange")
+    expect(label).toHaveAttribute("data-answer-state", "selected")
   })
 
-  test("aplica classe de estado correto", () => {
+  test("aplica estado de correto", () => {
     render(
       <AnswerOption
         id="q1-a"
@@ -97,10 +97,10 @@ describe("AnswerOption", () => {
     )
 
     const label = screen.getByRole("radio", { name: /a\./i }).closest("label")
-    expect(label?.className).toContain("border-correct")
+    expect(label).toHaveAttribute("data-answer-state", "correct")
   })
 
-  test("aplica classe de estado errado", () => {
+  test("aplica estado de errado", () => {
     render(
       <AnswerOption
         id="q1-a"
@@ -115,6 +115,6 @@ describe("AnswerOption", () => {
     )
 
     const label = screen.getByRole("radio", { name: /a\./i }).closest("label")
-    expect(label?.className).toContain("border-wrong")
+    expect(label).toHaveAttribute("data-answer-state", "wrong")
   })
 })

@@ -43,8 +43,9 @@ describe("QuestionCard", () => {
 
     fireEvent.click(optionC)
 
-    expect(optionC.closest("label")?.className).toContain(
-      "border-accent-orange"
+    expect(optionC.closest("label")).toHaveAttribute(
+      "data-answer-state",
+      "selected"
     )
   })
 
@@ -66,8 +67,14 @@ describe("QuestionCard", () => {
     expect(optionA).not.toBeChecked()
     expect(optionC).toBeChecked()
 
-    expect(optionA.closest("label")?.className).toContain("border-correct")
-    expect(optionC.closest("label")?.className).toContain("border-wrong")
+    expect(optionA.closest("label")).toHaveAttribute(
+      "data-answer-state",
+      "correct"
+    )
+    expect(optionC.closest("label")).toHaveAttribute(
+      "data-answer-state",
+      "wrong"
+    )
   })
 
   test("quando revelado marca alternativa correta e errada (múltipla escolha)", () => {
@@ -95,9 +102,18 @@ describe("QuestionCard", () => {
     expect(optionB).not.toBeChecked()
     expect(optionC).toBeChecked()
 
-    expect(optionA.closest("label")?.className).toContain("border-correct")
-    expect(optionB.closest("label")?.className).toContain("border-correct")
-    expect(optionC.closest("label")?.className).toContain("border-wrong")
+    expect(optionA.closest("label")).toHaveAttribute(
+      "data-answer-state",
+      "correct"
+    )
+    expect(optionB.closest("label")).toHaveAttribute(
+      "data-answer-state",
+      "correct"
+    )
+    expect(optionC.closest("label")).toHaveAttribute(
+      "data-answer-state",
+      "wrong"
+    )
   })
 
   test("desabilita opções quando revelado", () => {
