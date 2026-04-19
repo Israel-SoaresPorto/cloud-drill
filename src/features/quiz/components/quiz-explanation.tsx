@@ -1,5 +1,4 @@
-import { CircleX } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { CheckCircle, CircleX } from "lucide-react"
 import type { Question, QuestionAnswer } from "@/types/question"
 
 type QuizExplanationProps = {
@@ -15,20 +14,20 @@ export default function QuizExplanation({
 
   return (
     <section
-      className={cn(
-        "rounded-md border bg-card p-4",
-        isCorrect ? "border-correct/70" : "border-wrong/80"
-      )}
+      data-answer-is-correct={isCorrect}
+      className="group rounded-md border-2 bg-card p-4 answer-is-correct:border-correct answer-is-incorrect:border-wrong"
       aria-live="polite"
       aria-describedby="explanation-title"
+      aria-label="Explicação da questão"
     >
       <div className="mb-4 flex items-center gap-2">
-        {!isCorrect && <CircleX className="size-5 text-wrong" />}
+        {isCorrect ? (
+          <CheckCircle className="size-5 text-correct" />
+        ) : (
+          <CircleX className="size-5 text-wrong" />
+        )}
         <h3
-          className={cn(
-            "text-xl font-semibold",
-            isCorrect ? "text-correct" : "text-wrong"
-          )}
+          className="text-xl font-semibold group-answer-is-correct:text-correct group-answer-is-incorrect:text-wrong"
           id="explanation-title"
         >
           {isCorrect ? "Resposta Correta!" : "Resposta Incorreta!"}
@@ -37,32 +36,61 @@ export default function QuizExplanation({
 
       <div className="space-y-4">
         <div>
-          <p className="mb-1 text-xs font-bold tracking-[0.08em] text-primary-tx uppercase">
+          <h4
+            className="mb-1 text-xs font-bold tracking-[0.08em] text-primary-tx uppercase"
+            id="explanation-general"
+          >
             Explicação
-          </p>
-          <p className="text-sm leading-6 text-secondary-tx">
+          </h4>
+          <p
+            aria-describedby="explanation-general"
+            className="text-sm leading-6 text-secondary-tx"
+          >
             {question.explanation.general}
           </p>
         </div>
 
-        <div className="h-px w-full bg-idle" />
+        <div className="h-px w-full bg-muted-foreground" />
 
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-primary-tx">
+          <h4 className="text-sm font-semibold text-primary-tx">
             Por que as outras estão incorretas?
-          </p>
+          </h4>
 
-          {(
-            Object.entries(question.explanation.incorrects) as Array<
-              [string, string]
+          <ul>
+            {(
+              Object.entries(question.explanation.incorrects) as Array<
+                [string, string]
+              >
+            ).map(([optionId, reason]) => (
+              <li
+                key={optionId}
+                className="text-sm leading-6 text-secondary-tx"
+              >
+                <strong className="mr-1 font-semibold text-wrong uppercase">
+                  {optionId}:
+                </strong>
+                {reason}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="h-px w-full bg-muted-foreground" />
+
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-primary-tx">
+            Referências:
+          </h4>
+          {question.references.map((reference, index) => (
+            <a
+              key={index}
+              href={reference}
+              target="_blank"
+              className="text-secondary-tx hover:text-accent-cyan"
             >
-          ).map(([optionId, reason]) => (
-            <p key={optionId} className="text-sm leading-6 text-secondary-tx">
-              <span className="mr-1 font-semibold text-wrong uppercase">
-                {optionId}:
-              </span>
-              {reason}
-            </p>
+              {reference}
+            </a>
           ))}
         </div>
       </div>

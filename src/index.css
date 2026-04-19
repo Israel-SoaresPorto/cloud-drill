@@ -7,9 +7,12 @@
 @custom-variant answer-idle (&[data-answer-state="idle"]);
 @custom-variant answer-selected (&[data-answer-state="selected"]);
 @custom-variant answer-correct (&[data-answer-state="correct"]);
-@custom-variant answer-wrong (&[data-answer-state="wrong"]);
+@custom-variant answer-wrong (&[data-answer-state="wrong"]); 
 
 @custom-variant checkbox-checked (&:is(input[type='checkbox']:checked));
+
+@custom-variant answer-is-correct (&[data-answer-is-correct="true"]);
+@custom-variant answer-is-incorrect (&[data-answer-is-correct="false"]);
 
 @theme inline {
   /* Backgrounds */

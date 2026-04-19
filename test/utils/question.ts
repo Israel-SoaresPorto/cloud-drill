@@ -30,7 +30,7 @@ export function makeQuestion(
         e: "x",
       },
     },
-    references: [],
+    references: ["https://docs.aws.amazon.com/"],
     tags: [],
   } as Question
 }
