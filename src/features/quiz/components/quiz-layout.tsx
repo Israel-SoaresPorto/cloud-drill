@@ -94,8 +94,8 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     )
 
     setResult(result)
-    clearSession()
     navigate("/resultado", { replace: true })
+    clearSession()
   }, [endSession, setResult, clearSession, navigate])
 
   const handleQuizComplete = () => {
