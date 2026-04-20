@@ -18,7 +18,7 @@ describe("ResultLayout", () => {
   test("renderiza resumo principal do resultado", () => {
     renderLayout(
       makeResult({
-        score: 70,
+        score: 700,
         correctCount: 14,
         totalQuestions: 20,
         duration: 1122,
@@ -27,10 +27,10 @@ describe("ResultLayout", () => {
     )
 
     expect(screen.getByText("Aprovado")).toBeInTheDocument()
-    expect(screen.getByRole("heading", { name: "70%" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "700" })).toBeInTheDocument()
     expect(screen.getByText("14 de 20 questões corretas")).toBeInTheDocument()
     expect(screen.getByText("Desempenho por Domínio")).toBeInTheDocument()
-    expect(screen.getByText("18:42")).toBeInTheDocument()
+    expect(screen.getByText("18m 42s")).toBeInTheDocument()
   })
 
   test("renderiza status de aprovação", () => {
@@ -134,7 +134,7 @@ describe("ResultLayout", () => {
     expect(screen.getByText("15")).toBeInTheDocument()
     expect(screen.getByText("12")).toBeInTheDocument()
     expect(screen.getByText("3")).toBeInTheDocument()
-    expect(screen.getByText("15:00")).toBeInTheDocument()
+    expect(screen.getByText("15m")).toBeInTheDocument()
   })
 
   test("botão de voltar navega para home", () => {

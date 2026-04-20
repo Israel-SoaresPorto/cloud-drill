@@ -1,4 +1,4 @@
-import type { QuizResult } from "@/types/quiz";
+import type { QuizResult } from "@/types/quiz"
 
 export function makeResult(overrides: Partial<QuizResult> = {}): QuizResult {
   return {
@@ -8,7 +8,7 @@ export function makeResult(overrides: Partial<QuizResult> = {}): QuizResult {
     totalQuestions: 20,
     correctCount: 14,
     incorrectCount: 6,
-    score: 70,
+    score: 700,
     passed: true,
     domainBreakdown: {
       "Conceitos de Nuvem": { correct: 4, total: 5 },

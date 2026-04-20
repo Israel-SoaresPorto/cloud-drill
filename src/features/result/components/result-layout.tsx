@@ -49,7 +49,7 @@ export default function ResultLayout({ result }: ResultLayoutProps) {
               data-approved={result.passed}
               className="text-6xl font-bold data-[approved=false]:text-wrong data-[approved=true]:text-correct"
             >
-              {result.score}%
+              {result.score}
             </h1>
             <p className="text-secondary-tx">
               {result.correctCount} de {result.totalQuestions} questões corretas

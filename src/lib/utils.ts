@@ -7,12 +7,16 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatTimerLabel(totalSeconds: number | null | undefined) {
   if (typeof totalSeconds !== "number" || Number.isNaN(totalSeconds)) {
-    return "--:--"
+    return "00s"
   }
 
-  const clamped = Math.max(totalSeconds, 0)
-  const minutes = Math.floor(clamped / 60)
-  const seconds = clamped % 60
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
 
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+  const hoursLabel = hours > 0 ? `${hours}h` : ""
+  const minutesLabel = minutes > 0 ? `${minutes}m` : ""
+  const secondsLabel = seconds > 0 ? `${seconds}s` : ""
+
+  return `${hoursLabel} ${minutesLabel} ${secondsLabel}`
 }

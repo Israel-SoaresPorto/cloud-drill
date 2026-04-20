@@ -7,10 +7,11 @@ import QuizNavigation from "./quiz-navigation"
 import { formatTimerLabel } from "@/lib/utils"
 import type { QuizSession } from "@/types/quiz"
 import { Progress } from "@/components/ui/progress"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import QuizAlert from "@/components/alert"
 import { useResultStore } from "../../result/stores/result.store"
+import { calculateQuizResult } from "@/lib/result"
 
 interface QuizLayoutProps {
   session: QuizSession
@@ -73,13 +74,29 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     revealAnswer()
   }
 
-  const handleFinish = () => {
-    const result = endSession()
+  const handleFinish = useCallback(() => {
+    const {
+      answers,
+      exam,
+      mode,
+      questions,
+      duration,
+      id: sessionId,
+    } = endSession()
+
+    const result = calculateQuizResult(
+      sessionId,
+      exam,
+      mode,
+      questions,
+      answers,
+      duration
+    )
+
     setResult(result)
-    console.log("Quiz finalizado:", result)
     clearSession()
     navigate("/resultado", { replace: true })
-  }
+  }, [endSession, setResult, clearSession, navigate])
 
   const handleQuizComplete = () => {
     const totalQuestions = session.questions.length

@@ -1,18 +1,13 @@
 import { create, type StateCreator } from "zustand"
 import { persist } from "zustand/middleware"
-import type { QuizSession, QuizResult } from "@/types/quiz"
+import type { QuizSession } from "@/types/quiz"
 import type {
   OptionsID,
   Question,
   QuestionAnswer,
   QuestionID,
 } from "@/types/question"
-import type {
-  DomainBreakdown,
-  DomainCode,
-  ExamDomains,
-  Exams,
-} from "@/types/domains"
+import type { DomainCode, ExamDomains, Exams } from "@/types/domains"
 import { generateQuizSessionID } from "@/lib/quiz"
 
 export interface QuizState {
@@ -27,7 +22,10 @@ export interface QuizState {
   nextQuestion: () => void
   previousQuestion: () => void
   revealAnswer: () => void
-  endSession: () => QuizResult
+  endSession: () => Omit<
+    QuizSession,
+    "domains" | "currentIndex" | "startTime" | "endTime" | "timeLimit"
+  > & { duration: number }
   clearSession: () => void
 }
 
@@ -153,50 +151,14 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
     const endTime = Date.now()
     const duration = Math.floor((endTime - session.startTime) / 1000)
 
-    // Calcular resultado
-    let correctCount = 0
-    let incorrectCount = 0
-    const domainBreakdown: DomainBreakdown = {} as DomainBreakdown
-
-    session.questions.forEach((q) => {
-      const userAnswer = session.answers[q.id]
-      const userAnswers = userAnswer?.selectedOptionIds || []
-      const isCorrect = userAnswer?.isCorrect || false
-
-      if (isCorrect) correctCount++
-      else if (userAnswers.length > 0) incorrectCount++
-
-      // Breakdown por domínio
-      if (!domainBreakdown[q.domain]) {
-        domainBreakdown[q.domain as ExamDomains[DomainCode]] = {
-          correct: 0,
-          total: 0,
-        }
-      }
-
-      domainBreakdown[q.domain as ExamDomains[DomainCode]].total++
-
-      if (isCorrect)
-        domainBreakdown[q.domain as ExamDomains[DomainCode]].correct++
-    })
-
-    const score = Math.round((correctCount / session.questions.length) * 100)
-
-    const result: QuizResult = {
-      sessionId: session.id,
+    return {
+      id: session.id,
       exam: session.exam,
       mode: session.mode,
-      totalQuestions: session.questions.length,
-      correctCount,
-      incorrectCount,
-      score,
-      passed: score >= 70, // nota de corte de 70%
-      domainBreakdown,
+      questions: session.questions,
+      answers: session.answers,
       duration,
-      completedAt: new Date(),
     }
-
-    return result
   },
 
   // Limpar sessão

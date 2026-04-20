@@ -153,7 +153,8 @@ describe("Quiz Store - Logic", () => {
     expect(useQuizStore.getState().isRevealed).toBe(false)
   })
 
-  test("endSession calcula score e aprovação corretamente", () => {
+  test("endSession retorna dados para calculo de resultado", () => {
+    vi.spyOn(quizLib, "generateQuizSessionID").mockReturnValue("session-1")
     vi.spyOn(Date, "now").mockReturnValueOnce(1000).mockReturnValueOnce(61_000)
 
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
@@ -178,50 +179,16 @@ describe("Quiz Store - Logic", () => {
 
     const result = useQuizStore.getState().endSession()
 
-    expect(result.correctCount).toBe(2)
-    expect(result.incorrectCount).toBe(1)
-    expect(result.score).toBe(67)
-    expect(result.passed).toBe(false)
+    expect(result.id).toBe("session-1")
+    expect(result.exam).toBe("CLF_002")
+    expect(result.mode).toBe("practice")
+    expect(result.questions).toStrictEqual([q1, q2, q3])
     expect(result.duration).toBe(60)
-    expect(result.domainBreakdown["Conceitos de Nuvem"]).toEqual({
-      correct: 1,
-      total: 1,
+    expect(result.answers).toHaveProperty("CLF_002-question-001", {
+      id: "CLF_002-question-001",
+      isCorrect: true,
+      selectedOptionIds: ["a"],
     })
-  })
-
-  test("endSession considera aprovado com nota de corte igual a 70", () => {
-    const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
-    const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
-    const q3 = makeQuestion("003", "CLF_002-aws-technologies")
-    const q4 = makeQuestion("004", "CLF_002-billing-and-pricing")
-    const q5 = makeQuestion("005", "CLF_002-cloud-concepts")
-    const q6 = makeQuestion("006", "CLF_002-security-and-compliance")
-    const q7 = makeQuestion("007", "CLF_002-aws-technologies")
-    const q8 = makeQuestion("008", "CLF_002-billing-and-pricing")
-    const q9 = makeQuestion("009", "CLF_002-cloud-concepts")
-    const q10 = makeQuestion("010", "CLF_002-security-and-compliance")
-
-    useQuizStore.getState().startSession({
-      exam: "CLF_002",
-      domains: [
-        "CLF_002-cloud-concepts",
-        "CLF_002-security-and-compliance",
-        "CLF_002-aws-technologies",
-        "CLF_002-billing-and-pricing",
-      ],
-      questionCount: 10,
-      mode: "practice",
-      questions: [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10],
-    })
-    ;[q1, q2, q3, q4, q5, q6, q7].forEach((q) => {
-      useQuizStore.getState().submitAnswer(q.id, ["a"])
-    })
-
-    const result = useQuizStore.getState().endSession()
-
-    expect(result.score).toBe(70)
-    expect(result.passed).toBe(true)
-    expect(result.incorrectCount).toBe(0)
   })
 
   test("clearSession reseta estado", () => {
@@ -254,7 +221,7 @@ describe("Quiz Store - Persistence", () => {
       partialize: (state) => ({ session: state.session }), // só persiste a sessão
     })
   )
-  
+
   test("persist salva sessão no localStorage", () => {
     vi.spyOn(quizLib, "generateQuizSessionID").mockReturnValue(
       "session-persist"

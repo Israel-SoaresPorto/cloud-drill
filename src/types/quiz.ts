@@ -39,7 +39,7 @@ export interface QuizResult {
   totalQuestions: number
   correctCount: number
   incorrectCount: number
-  score: number // porcentagem
+  score: number
   passed: boolean
   domainBreakdown: DomainBreakdown
   duration: number // em segundos
