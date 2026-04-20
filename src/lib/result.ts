@@ -19,7 +19,7 @@ export function calculateDomainBreakdown(
 
   questions.forEach((q) => {
     const userAnswer = answers[q.id]
-    const isCorrect = userAnswer.isCorrect || false
+    const isCorrect = userAnswer?.isCorrect ?? false
 
     // Breakdown por domínio
     if (!domainBreakdown[q.domain]) {
@@ -65,8 +65,8 @@ export function calculateQuizResult(
 
   questions.forEach((q) => {
     const userAnswer = answers[q.id]
-    const userAnswers = userAnswer.selectedOptionIds || []
-    const isCorrect = userAnswer.isCorrect || false
+    const userAnswers = userAnswer?.selectedOptionIds ?? []
+    const isCorrect = userAnswer?.isCorrect ?? false
 
     if (isCorrect) correctCount++
     else if (userAnswers.length > 0) incorrectCount++
