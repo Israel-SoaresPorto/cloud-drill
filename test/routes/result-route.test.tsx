@@ -31,7 +31,7 @@ describe("ResultRoute", () => {
     useResultStore.setState((state) => ({
       ...state,
       result: makeResult({
-        score: 85,
+        score: 850,
         correctCount: 17,
         totalQuestions: 20,
         incorrectCount: 3,
@@ -40,7 +40,7 @@ describe("ResultRoute", () => {
 
     render()
 
-    expect(screen.getByText("85%")).toBeInTheDocument()
+    expect(screen.getByText("850")).toBeInTheDocument()
     expect(screen.getByText("Desempenho por Domínio")).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: "Voltar para Home" }))

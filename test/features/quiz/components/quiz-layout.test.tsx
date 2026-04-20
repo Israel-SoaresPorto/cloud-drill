@@ -7,7 +7,7 @@ import type { QuizSession } from "@/types/quiz"
 import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 
 function renderLayout(session: QuizSession) {
-  useQuizStore.setState(state => ({
+  useQuizStore.setState((state) => ({
     ...state,
     session,
     isRevealed: false,
@@ -101,7 +101,7 @@ describe("QuizLayout", () => {
     expect(confirmButton).not.toBeDisabled()
   })
 
-  test("quando questão já está respondida, avança para a próxima questão", async() => {
+  test("quando questão já está respondida, avança para a próxima questão", async () => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
@@ -126,7 +126,7 @@ describe("QuizLayout", () => {
 
     fireEvent.click(nextButton)
 
-     waitFor(async () => {
+    waitFor(async () => {
       const nextQuestion = await screen.getByText(q2.question)
       expect(nextQuestion).toBeInTheDocument()
     })
@@ -166,7 +166,7 @@ describe("QuizLayout", () => {
       const previousQuestion = screen.getByText(q1.question)
       expect(previousQuestion).toBeInTheDocument()
     })
-  });
+  })
 
   test("quando questão já está respondida, exibe explicação correta", () => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
@@ -188,8 +188,10 @@ describe("QuizLayout", () => {
       startTime: 1000,
     })
 
+    const explanation = screen.getByLabelText("Explicação da questão")
+
     expect(
-      screen.getByRole("generic", { description: "Resposta Correta!" })
+      within(explanation).getByRole("heading", { name: "Resposta Correta!" })
     ).toBeInTheDocument()
   })
 
@@ -213,8 +215,10 @@ describe("QuizLayout", () => {
       startTime: 1000,
     })
 
+    const explanation = screen.getByLabelText("Explicação da questão")
+
     expect(
-      screen.getByRole("generic", { description: "Resposta Incorreta!" })
+      within(explanation).getByRole("heading", { name: "Resposta Incorreta!" })
     ).toBeInTheDocument()
   })
 
