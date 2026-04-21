@@ -43,7 +43,8 @@ describe("Header", () => {
       "href",
       "/"
     )
-    expect(screen.getByText("CloudDrill")).toBeInTheDocument()
+    expect(screen.getByAltText(/CloudDrill Logo/i)).toBeInTheDocument()
+    expect(screen.getByText(/Cloud/i)).toBeInTheDocument()
   })
 
   test("mostra o botão de alternância para tema claro quando está no tema escuro", () => {
