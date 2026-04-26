@@ -1,0 +1,82 @@
+name: Build, Test and Deploy
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    name: Lint e Testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout de código
+        uses: actions/checkout@v4
+
+      - name: Setup do pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Instalar dependências
+        run: pnpm install -- frozen-lockfile
+
+      - name: Verificação de Lint
+        run: pnpm lint
+
+      - name: Executar testes
+        run: pnpm test
+
+      - name: Verificar TypeScript
+        run: pnpm typecheck   
+
+  deploy:
+    name: Deploy para Vercel
+    needs: lint-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout de código
+        uses: actions/checkout@v4
+
+      - name: Setup do pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Instalar dependências
+        run: pnpm install -- frozen-lockfile  
+
+      - name: Instalar Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull do Vercel
+        run: pnpm dlx vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build para produção
+        run: pnpm dlx vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}  
+
+      - name: Deploy para Vercel
+        run: pnpm dlx vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
