@@ -70,7 +70,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Instalar Vercel CLI
-        run: npm install -g vercel
+        run: pnpm install -g vercel
 
       - name: Pull do Vercel
         run: pnpm dlx vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
