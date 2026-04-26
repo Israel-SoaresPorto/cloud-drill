@@ -95,8 +95,7 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
 
     setResult(result)
     navigate("/resultado", { replace: true })
-    clearSession()
-  }, [endSession, setResult, clearSession, navigate])
+  }, [endSession, setResult, navigate])
 
   const handleQuizComplete = () => {
     const totalQuestions = session.questions.length

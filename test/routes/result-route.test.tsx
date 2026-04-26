@@ -1,9 +1,10 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { fireEvent, screen } from "@testing-library/react"
 import renderWithRouter from "../utils/render-with-router"
 import ResultPage from "@/routes/result-route"
 import { useResultStore } from "@/features/result/stores/result.store"
 import { makeResult } from "../utils/result"
+import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 
 describe("ResultRoute", () => {
   const render = () => {
@@ -46,5 +47,23 @@ describe("ResultRoute", () => {
     fireEvent.click(screen.getByRole("button", { name: "Voltar para Home" }))
 
     expect(screen.getByText("Home")).toBeInTheDocument()
+  })
+
+  test("limpa sessão do quiz ao acessar a página de resultados com resultado disponível", () => {
+    useResultStore.setState((state) => ({
+      ...state,
+      result: makeResult({
+        score: 900,
+        correctCount: 18,
+        totalQuestions: 20,
+        incorrectCount: 2,
+      }),
+    }))
+
+    const clearSession = vi.spyOn(useQuizStore.getState(), "clearSession")
+
+    render()
+
+    expect(clearSession).toHaveBeenCalledTimes(1)
   })
 })
