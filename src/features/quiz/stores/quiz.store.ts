@@ -19,9 +19,11 @@ export interface QuizState {
   // Ações
   startSession: (config: SessionConfig) => void
   submitAnswer: (questionId: QuestionID, answers: OptionsID[]) => void
+  goToQuestion: (questionIndex: number) => void
   nextQuestion: () => void
   previousQuestion: () => void
   revealAnswer: () => void
+  toggleQuestionReview: (questionId: QuestionID) => void
   endSession: () => Omit<
     QuizSession,
     "domains" | "currentIndex" | "startTime" | "endTime" | "timeLimit"
@@ -43,6 +45,28 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
   isRevealed: false,
   timeRemaining: null,
 
+  goToQuestion: (questionIndex) => {
+    const { session } = get()
+    if (!session) return
+
+    if (questionIndex < 0 || questionIndex >= session.questions.length) {
+      return
+    }
+
+    const targetQuestion = session.questions[questionIndex]
+    const hasAnsweredTargetQuestion =
+      !!session.answers[targetQuestion.id] &&
+      session.answers[targetQuestion.id].selectedOptionIds.length > 0
+
+    set({
+      session: {
+        ...session,
+        currentIndex: questionIndex,
+      },
+      isRevealed: hasAnsweredTargetQuestion,
+    })
+  },
+
   // Iniciar nova sessão
   startSession: (config) => {
     const id = generateQuizSessionID()
@@ -55,6 +79,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       questions: config.questions,
       currentIndex: 0,
       answers: {},
+      reviewFlags: {},
       startTime: Date.now(),
       timeLimit: config.mode === "simulated" ? 90 * 60 : undefined, // 90 min
     }
@@ -85,6 +110,10 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       isCorrect,
     }
 
+    // remove questão dos flags de revisão ao responder
+    const reviewFlags = { ...(session.reviewFlags ?? {}) }
+    delete reviewFlags[questionId]
+
     set({
       session: {
         ...session,
@@ -92,6 +121,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
           ...session.answers,
           [questionId]: questionAnswer,
         },
+        reviewFlags,
       },
     })
   },
@@ -102,19 +132,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
     if (!session) return
 
     if (session.currentIndex < session.questions.length - 1) {
-      const nextIndex = session.currentIndex + 1
-      const nextQuestion = session.questions[nextIndex]
-      const hasAnsweredNextQuestion =
-        !!session.answers[nextQuestion.id] &&
-        session.answers[nextQuestion.id].selectedOptionIds.length > 0
-
-      set({
-        session: {
-          ...session,
-          currentIndex: nextIndex,
-        },
-        isRevealed: hasAnsweredNextQuestion,
-      })
+      get().goToQuestion(session.currentIndex + 1)
     }
   },
 
@@ -124,24 +142,45 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
     if (!session) return
 
     if (session.currentIndex > 0) {
-      const nextIndex = session.currentIndex - 1
-      const nextQuestion = session.questions[nextIndex]
-      const hasAnsweredNextQuestion =
-        !!session.answers[nextQuestion.id] &&
-        session.answers[nextQuestion.id].selectedOptionIds.length > 0
-
-      set({
-        session: {
-          ...session,
-          currentIndex: nextIndex,
-        },
-        isRevealed: hasAnsweredNextQuestion,
-      })
+      get().goToQuestion(session.currentIndex - 1)
     }
   },
 
   // Revelar resposta (modo prática)
   revealAnswer: () => set({ isRevealed: true }),
+
+  // Marcar/desmarcar questão para revisão
+  toggleQuestionReview: (questionId) => {
+    const { session } = get()
+    if (!session) return
+
+    const targetQuestion = session.questions.find(
+      (question) => question.id === questionId
+    )
+
+    if (!targetQuestion) return
+
+    const hasAnsweredTargetQuestion =
+      !!session.answers[targetQuestion.id] &&
+      session.answers[targetQuestion.id].selectedOptionIds.length > 0
+
+    if (hasAnsweredTargetQuestion) return
+
+    const reviewFlags = { ...(session.reviewFlags ?? {}) }
+
+    if (reviewFlags[questionId]) {
+      delete reviewFlags[questionId]
+    } else {
+      reviewFlags[questionId] = true
+    }
+
+    set({
+      session: {
+        ...session,
+        reviewFlags,
+      },
+    })
+  },
 
   // Finalizar sessão e retornar resultado
   endSession: () => {

@@ -136,4 +136,30 @@ describe("QuestionCard", () => {
       expect(option.closest("label")?.className).toContain("cursor-not-allowed")
     })
   })
+
+  test("permite marcar e desmarcar para revisão", () => {
+    const question = makeQuestion("010", "CLF_002-cloud-concepts")
+    const onToggleReview = vi.fn()
+
+    render(
+      <QuestionCard
+        question={question}
+        selectedOptionIds={[]}
+        revealed={false}
+        isMarkedForReview
+        onToggleReview={onToggleReview}
+        onSelectionChange={vi.fn()}
+      />
+    )
+
+    const reviewButton = screen.getByRole("button", {
+      name: "Remover revisão",
+    })
+
+    expect(reviewButton).toHaveAttribute("aria-pressed", "true")
+
+    fireEvent.click(reviewButton)
+
+    expect(onToggleReview).toHaveBeenCalledTimes(1)
+  })
 })

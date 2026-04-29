@@ -324,4 +324,67 @@ describe("QuizLayout", () => {
     const home = screen.getByText("Home")
     expect(home).toBeInTheDocument()
   })
+
+  test("navega pelo mapa e marca questão para revisão", () => {
+    const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
+    const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
+
+    renderLayout({
+      id: "session-1",
+      exam: "CLF_002",
+      domains: ["Conceitos de Nuvem", "Segurança e Conformidade"],
+      mode: "practice",
+      questions: [q1, q2],
+      currentIndex: 0,
+      answers: {},
+      startTime: 1000,
+    })
+
+    const questionMap = screen.getByRole("complementary")
+
+    expect(questionMap).toBeInTheDocument()
+
+    fireEvent.click(
+      within(questionMap).getByRole("button", { name: "Questão 2" })
+    )
+
+    expect(screen.getByText(q2.question)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Marcar para revisão" }))
+
+    expect(
+      screen.getByRole("button", { name: "Remover revisão" })
+    ).toBeInTheDocument()
+
+    expect(
+      within(questionMap).getByRole("button", {
+        name: /questão 2, marcada para revisão/i,
+      })
+    ).toHaveAttribute("data-reviewed", "true")
+  })
+
+  test("permite abrir mapa de questões", () => {
+    const question = makeQuestion("010", "CLF_002-cloud-concepts")
+
+    renderLayout({
+      id: "session-1",
+      exam: "CLF_002",
+      domains: ["Conceitos de Nuvem"],
+      mode: "practice",
+      questions: [question],
+      currentIndex: 0,
+      answers: {},
+      startTime: 1000,
+    })
+
+    const openMapButton = screen.getByRole("button", {
+      name: "Abrir mapa de questões",
+    })
+
+    expect(openMapButton).toBeInTheDocument()
+
+    fireEvent.click(openMapButton)
+
+    expect(screen.getByRole("dialog", { name: "Mapa das questões" })).toBeInTheDocument()
+  })
 })

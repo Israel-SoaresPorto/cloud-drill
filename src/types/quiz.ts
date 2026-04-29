@@ -6,7 +6,7 @@ import type {
   ExamDomains,
   Exams,
 } from "./domains"
-import type { Question, QuestionAnswer } from "./question"
+import type { Question, QuestionAnswer, QuestionID } from "./question"
 
 export type QuizMode = "simulated" | "practice"
 
@@ -27,6 +27,7 @@ export interface QuizSession {
   questions: Question[]
   currentIndex: number
   answers: Record<string, QuestionAnswer>
+  reviewFlags?: Partial<Record<QuestionID, boolean>>
   startTime: number
   endTime?: number
   timeLimit?: number

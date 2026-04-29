@@ -115,6 +115,47 @@ describe("Quiz Store - Logic", () => {
     expect(useQuizStore.getState().session?.currentIndex).toBe(0)
   })
 
+  test("goToQuestion navega diretamente e ajusta isRevealed", () => {
+    const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
+    const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
+
+    useQuizStore.getState().startSession({
+      exam: "CLF_002",
+      domains: ["CLF_002-cloud-concepts", "CLF_002-security-and-compliance"],
+      questionCount: 2,
+      mode: "practice",
+      questions: [q1, q2],
+    })
+
+    useQuizStore.getState().submitAnswer(q1.id, ["a"])
+
+    useQuizStore.getState().goToQuestion(1)
+    expect(useQuizStore.getState().session?.currentIndex).toBe(1)
+    expect(useQuizStore.getState().isRevealed).toBe(false)
+
+    useQuizStore.getState().goToQuestion(0)
+    expect(useQuizStore.getState().session?.currentIndex).toBe(0)
+    expect(useQuizStore.getState().isRevealed).toBe(true)
+  })
+
+  test("toggleQuestionReview alterna a marcação da questão", () => {
+    const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
+
+    useQuizStore.getState().startSession({
+      exam: "CLF_002",
+      domains: ["CLF_002-cloud-concepts"],
+      questionCount: 1,
+      mode: "practice",
+      questions: [q1],
+    })
+
+    useQuizStore.getState().toggleQuestionReview(q1.id)
+    expect(useQuizStore.getState().session?.reviewFlags?.[q1.id]).toBe(true)
+
+    useQuizStore.getState().toggleQuestionReview(q1.id)
+    expect(useQuizStore.getState().session?.reviewFlags?.[q1.id]).toBeUndefined()
+  })
+
   test("nextQuestion não ultrapassa limite superior", () => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
@@ -235,8 +276,11 @@ describe("Quiz Store - Persistence", () => {
       questions: [makeQuestion("001", "CLF_002-cloud-concepts")],
     })
 
+    useQuizStore.getState().toggleQuestionReview("CLF_002-question-001")
+
     const raw = localStorage.getItem("quiz-session")
 
     expect(raw).toContain("session-persist")
+    expect(raw).toContain("reviewFlags")
   })
 })

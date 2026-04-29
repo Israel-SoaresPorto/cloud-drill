@@ -20,13 +20,13 @@ export default function QuizNavigation({
   onConfirm,
 }: QuizNavigationProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex w-full max-w-screen-2xl flex-wrap items-center justify-between gap-3">
       <Button
         type="button"
-        variant="secondary"
+        variant="outline"
         size="lg"
         disabled={!canGoPrevious}
-        className="grow basis-40 xs:grow-0"
+        className="grow basis-40 border border-muted/25 xs:grow-0"
         onClick={onPrevious}
       >
         Anterior
