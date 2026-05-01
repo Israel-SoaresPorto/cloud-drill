@@ -48,7 +48,11 @@ export default function QuizHeader({
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <div className="inline-flex items-center gap-2 rounded-md border border-idle bg-option px-3 py-1.5 text-sm text-primary-tx">
+          <div
+            className="inline-flex items-center gap-2 rounded-md border border-idle bg-option px-3 py-1.5 text-sm text-primary-tx"
+            role="timer"
+            aria-live="polite"
+          >
             <span
               className="size-1.5 rounded-full bg-accent-cyan"
               aria-hidden="true"

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest"
+import { afterEach, describe, expect, test, vi } from "vitest"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import {
@@ -7,11 +7,12 @@ import {
 } from "@/features/quiz/stores/quiz.store"
 import * as quizLib from "@/lib/quiz"
 import { makeQuestion } from "../../../utils/question"
+import { createQuizSession } from "../../../utils/quiz"
 
 describe("Quiz Store - Logic", () => {
   const useQuizStore = create<QuizState>(quizStoreCreator)
 
-  beforeEach(() => {
+  afterEach(() => {
     useQuizStore.getState().clearSession()
   })
 
@@ -153,7 +154,9 @@ describe("Quiz Store - Logic", () => {
     expect(useQuizStore.getState().session?.reviewFlags?.[q1.id]).toBe(true)
 
     useQuizStore.getState().toggleQuestionReview(q1.id)
-    expect(useQuizStore.getState().session?.reviewFlags?.[q1.id]).toBeUndefined()
+    expect(
+      useQuizStore.getState().session?.reviewFlags?.[q1.id]
+    ).toBeUndefined()
   })
 
   test("nextQuestion não ultrapassa limite superior", () => {
@@ -252,6 +255,86 @@ describe("Quiz Store - Logic", () => {
     expect(() => useQuizStore.getState().endSession()).toThrow(
       "No active session"
     )
+  })
+
+  test("deve decrementar timeRemaining em 1 segundo", () => {
+    const session = createQuizSession()
+
+    useQuizStore.setState((state) => ({
+      ...state,
+      session,
+      timeRemaining: 100,
+      sessionExpired: false,
+    }))
+
+    useQuizStore.getState().tickTimer()
+
+    expect(useQuizStore.getState().timeRemaining).toBe(99)
+  })
+
+  test("deve manter timeRemaining em 0 ao atingir zero", () => {
+    const session = createQuizSession({
+      timeLimit: 1,
+    })
+
+    useQuizStore.setState((state) => ({
+      ...state,
+      session,
+      timeRemaining: 1,
+      sessionExpired: false,
+    }))
+
+    useQuizStore.getState().tickTimer()
+
+    expect(useQuizStore.getState().timeRemaining).toBe(0)
+    expect(useQuizStore.getState().timeRemaining).toBeGreaterThanOrEqual(0)
+  })
+
+  test("deve setar sessionExpired=true quando timeRemaining chega a 0", () => {
+    const session = createQuizSession({
+      timeLimit: 1,
+    })
+
+    useQuizStore.setState((state) => ({
+      ...state,
+      session,
+      timeRemaining: 1,
+      sessionExpired: false,
+    }))
+
+    useQuizStore.getState().tickTimer()
+
+    expect(useQuizStore.getState().sessionExpired).toBe(true)
+  })
+
+  test("deve seter sessionExpired=true ao chamar endSession(true)", () => {
+    const session = createQuizSession()
+
+    useQuizStore.setState((state) => ({
+      ...state,
+      session,
+      timeRemaining: 100,
+      sessionExpired: false,
+    }))
+
+    useQuizStore.getState().endSession(true)
+
+    expect(useQuizStore.getState().sessionExpired).toBe(true)
+  })
+
+  test("deve incluir sessionExpired no resultado retornado", () => {
+    const session = createQuizSession()
+
+    useQuizStore.setState((state) => ({
+      ...state,
+      session,
+      timeRemaining: 100,
+      sessionExpired: false,
+    }))
+
+    const sessionResult = useQuizStore.getState().endSession()
+
+    expect(sessionResult).toHaveProperty("sessionExpired")
   })
 })
 

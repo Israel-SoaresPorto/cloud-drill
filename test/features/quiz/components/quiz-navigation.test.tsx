@@ -12,6 +12,7 @@ describe("QuizNavigation", () => {
         canGoNext={true}
         canConfirm={true}
         isAnswered={false}
+        isSimulatedMode={false}
         onPrevious={vi.fn()}
         onNext={vi.fn()}
         onConfirm={onConfirm}
@@ -38,6 +39,7 @@ describe("QuizNavigation", () => {
         canGoNext={true}
         canConfirm={false}
         isAnswered
+        isSimulatedMode={false}
         onPrevious={vi.fn()}
         onNext={onNext}
         onConfirm={vi.fn()}
@@ -59,6 +61,7 @@ describe("QuizNavigation", () => {
         canGoNext={true}
         canConfirm={false}
         isAnswered
+        isSimulatedMode={false}
         onPrevious={onPrevious}
         onNext={vi.fn()}
         onConfirm={vi.fn()}
@@ -78,6 +81,7 @@ describe("QuizNavigation", () => {
         canGoNext={false}
         canConfirm={false}
         isAnswered
+        isSimulatedMode={false}
         onPrevious={vi.fn()}
         onNext={vi.fn()}
         onConfirm={vi.fn()}
@@ -85,5 +89,32 @@ describe("QuizNavigation", () => {
     )
 
     expect(screen.getByRole("button", { name: "Próxima" })).toBeDisabled()
+  })
+
+  test("desabilita confirmação de resposta quando modo é simulado", () => {
+    const onConfirm = vi.fn()
+
+    render(
+      <QuizNavigation
+        canGoPrevious={true}
+        canGoNext={false}
+        canConfirm={false}
+        isAnswered
+        isSimulatedMode={true}
+        onPrevious={vi.fn()}
+        onNext={vi.fn()}
+        onConfirm={onConfirm}
+      />
+    )
+
+    const actionButton = screen.getByRole("button", { name: "Próxima" })
+
+    expect(
+      screen.getByRole("button", { name: "Próxima" })
+    ).toBeInTheDocument()
+
+    fireEvent.click(actionButton)
+
+    expect(onConfirm).toHaveBeenCalledTimes(0)
   })
 })

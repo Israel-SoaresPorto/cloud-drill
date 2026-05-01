@@ -15,6 +15,7 @@ import { useResultStore } from "../../result/stores/result.store"
 import { calculateQuizResult } from "@/lib/result"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useQuizTimer } from "../hooks/use-quiz-timer"
 
 interface QuizLayoutProps {
   session: QuizSession
@@ -37,12 +38,15 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   const timeRemaining = useQuizStore((state) => state.timeRemaining)
   const setResult = useResultStore((state) => state.setResult)
 
+  // Usar o hook do timer - ele gerencia o countdown automaticamente
+  const { isExpired } = useQuizTimer()
+
   const currentSession = liveSession ?? session
 
   const [draftAnswers, setDraftAnswers] = useState<Record<string, OptionsID[]>>(
     {}
   )
-  const [isProgressMapOpen, setIsProgressMapOpen] = useState(true)
+  const [isProgressMapOpen, setIsProgressMapOpen] = useState(false)
   const [openQuitAlert, setOpenQuitAlert] = useState(false)
   const [openFinishAlert, setOpenFinishAlert] = useState(false)
 
@@ -52,7 +56,8 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     currentAnswer?.selectedOptionIds ?? draftAnswers[currentQuestion.id] ?? []
   const answeredCount = currentAnswer?.selectedOptionIds.length ?? 0
   const hasAnsweredCurrent = answeredCount > 0
-  const isCurrentRevealed = hasAnsweredCurrent || isRevealed
+  const isCurrentRevealed =
+    (hasAnsweredCurrent || isRevealed) && currentAnswer !== undefined
   const canConfirm = !hasAnsweredCurrent && currentSelected.length > 0
   const canGoPrevious = currentSession.currentIndex > 0
   const canGoNext =
@@ -78,10 +83,13 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     (totalAnswered / Math.max(currentSession.questions.length, 1)) * 100
 
   const handleConfirm = () => {
-    if (!canConfirm) return
+    if (!canConfirm || isExpired) return
 
     submitAnswer(currentQuestion.id, currentSelected)
-    revealAnswer()
+
+    if (currentSession.mode === "practice") {
+      revealAnswer()
+    }
   }
 
   const handleFinish = useCallback(() => {
@@ -113,7 +121,7 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
       (answer) => answer.selectedOptionIds.length > 0
     ).length
 
-    if (totalAnswered === totalQuestions) {
+    if (totalAnswered === totalQuestions || isExpired) {
       handleFinish()
     } else {
       setOpenFinishAlert(true)
@@ -162,7 +170,7 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
               question={currentQuestion}
               selectedOptionIds={currentSelected}
               revealed={isCurrentRevealed}
-              disabled={hasAnsweredCurrent}
+              disabled={hasAnsweredCurrent || isExpired}
               isMarkedForReview={
                 currentSession.reviewFlags?.[currentQuestion.id] ?? false
               }
@@ -174,7 +182,7 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
               }}
               onToggleReview={() => toggleQuestionReview(currentQuestion.id)}
             />
-            {isCurrentRevealed && currentAnswer && (
+            {isCurrentRevealed && currentSession.mode === "practice" && (
               <QuizExplanation
                 question={currentQuestion}
                 answer={currentAnswer}
@@ -196,15 +204,31 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
       </main>
 
       <footer className="sticky bottom-0 place-items-center border-t border-secondary bg-card px-4 py-4 md:px-8 lg:px-12">
-        <QuizNavigation
-          canGoPrevious={canGoPrevious}
-          canGoNext={canGoNext}
-          canConfirm={canConfirm}
-          isAnswered={hasAnsweredCurrent}
-          onPrevious={previousQuestion}
-          onNext={nextQuestion}
-          onConfirm={handleConfirm}
-        />
+        {isExpired ? (
+          <div className="w-full">
+            <div className="flex w-full items-center justify-center rounded-lg bg-destructive/10 px-4 py-4 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-lg font-semibold text-destructive">
+                  Tempo Expirado
+                </span>
+                <span className="text-sm text-destructive/80">
+                  Seu quiz foi finalizado automaticamente
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <QuizNavigation
+            canGoPrevious={canGoPrevious}
+            canGoNext={canGoNext}
+            canConfirm={canConfirm && !isExpired}
+            isAnswered={hasAnsweredCurrent}
+            isSimulatedMode={currentSession.mode === "simulated"}
+            onPrevious={previousQuestion}
+            onNext={nextQuestion}
+            onConfirm={handleConfirm}
+          />
+        )}
       </footer>
 
       {isProgressMapOpen && (

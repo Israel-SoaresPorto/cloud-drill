@@ -15,6 +15,7 @@ export interface QuizState {
   session: QuizSession | null
   isRevealed: boolean // feedback visível?
   timeRemaining: number | null // para modo simulado
+  sessionExpired: boolean // rastreia expiração por timeout
 
   // Ações
   startSession: (config: SessionConfig) => void
@@ -24,7 +25,10 @@ export interface QuizState {
   previousQuestion: () => void
   revealAnswer: () => void
   toggleQuestionReview: (questionId: QuestionID) => void
-  endSession: () => Omit<
+  tickTimer: () => void // decrementa timeRemaining a cada segundo
+  endSession: (
+    forceExpired?: boolean
+  ) => Omit<
     QuizSession,
     "domains" | "currentIndex" | "startTime" | "endTime" | "timeLimit"
   > & { duration: number }
@@ -44,6 +48,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
   session: null,
   isRevealed: false,
   timeRemaining: null,
+  sessionExpired: false,
 
   goToQuestion: (questionIndex) => {
     const { session } = get()
@@ -88,6 +93,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       session,
       isRevealed: false,
       timeRemaining: session.timeLimit || null,
+      sessionExpired: false,
     })
   },
 
@@ -109,6 +115,9 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       selectedOptionIds: answers,
       isCorrect,
     }
+
+    console.log("Resposta submetida:", questionAnswer)
+    console.log("Tempo Expirado?", get().sessionExpired)
 
     // remove questão dos flags de revisão ao responder
     const reviewFlags = { ...(session.reviewFlags ?? {}) }
@@ -183,9 +192,13 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
   },
 
   // Finalizar sessão e retornar resultado
-  endSession: () => {
+  endSession: (forceExpired?: boolean) => {
     const { session } = get()
     if (!session) throw new Error("No active session")
+
+    if (forceExpired === true) {
+      set({ sessionExpired: true })
+    }
 
     const endTime = Date.now()
     const duration = Math.floor((endTime - session.startTime) / 1000)
@@ -197,6 +210,25 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       questions: session.questions,
       answers: session.answers,
       duration,
+      sessionExpired: get().sessionExpired,
+    }
+  },
+
+  // Decrementar timer a cada segundo
+  tickTimer: () => {
+    const { timeRemaining, session } = get()
+
+    if (timeRemaining === null || session?.mode !== "simulated") return
+
+    const newTimeRemaining = Math.max(timeRemaining - 1, 0)
+
+    if (newTimeRemaining === 0) {
+      set({
+        timeRemaining: newTimeRemaining,
+        sessionExpired: true,
+      })
+    } else {
+      set({ timeRemaining: newTimeRemaining })
     }
   },
 
@@ -206,12 +238,17 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       session: null,
       isRevealed: false,
       timeRemaining: null,
+      sessionExpired: false,
     }),
 })
 
 export const useQuizStore = create<QuizState>()(
   persist(quizStoreCreator, {
     name: "quiz-session", // chave do localStorage
-    partialize: (state) => ({ session: state.session }), // só persiste a sessão
+    partialize: (state) => ({
+      session: state.session,
+      timeRemaining: state.timeRemaining,
+    }),
+    version: 1,
   })
 )

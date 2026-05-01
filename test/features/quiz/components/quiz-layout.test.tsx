@@ -6,7 +6,9 @@ import renderWithRouter from "../../../utils/render-with-router"
 import type { QuizSession } from "@/types/quiz"
 import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 
-function renderLayout(session: QuizSession) {
+function renderLayout(
+  session: QuizSession,
+) {
   useQuizStore.setState((state) => ({
     ...state,
     session,
@@ -385,6 +387,78 @@ describe("QuizLayout", () => {
 
     fireEvent.click(openMapButton)
 
-    expect(screen.getByRole("dialog", { name: "Mapa das questões" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("dialog", { name: "Mapa das questões" })
+    ).toBeInTheDocument()
+  })
+
+  test('renderiza mensagem "Tempo expirado" quando quiz é expirado', async () => {
+    const question = makeQuestion("010", "CLF_002-cloud-concepts")
+
+    // Act - renderizar layout
+    renderLayout({
+      id: "session-1",
+      exam: "CLF_002",
+      domains: ["Conceitos de Nuvem"],
+      mode: "simulated",
+      questions: [question],
+      currentIndex: 0,
+      answers: {},
+      startTime: 1000,
+    })
+
+    useQuizStore.getState().endSession(true) // Forçar expiração da sessão
+
+    // Assert - verificar que "Tempo expirado" aparece
+    await waitFor(() =>
+      expect(screen.getByText(/Tempo expirado/i)).toBeInTheDocument()
+    )
+  })
+
+  test("não renderiza explicação quando modo é simulado", () => {
+    const question = makeQuestion("010", "CLF_002-cloud-concepts")
+
+    renderLayout({
+      id: "session-1",
+      exam: "CLF_002",
+      domains: ["Conceitos de Nuvem"],
+      mode: "simulated",
+      questions: [question],
+      currentIndex: 0,
+      answers: {
+        [question.id]: {
+          id: question.id,
+          selectedOptionIds: ["a"],
+          isCorrect: true,
+        },
+      },
+      startTime: 1000,
+      timeLimit: 300000,
+    })
+
+    // Assert
+    const explanation = screen.queryByLabelText("Explicação da questão")
+    expect(explanation).not.toBeInTheDocument()
+  })
+
+  test("exibe tempo restante quando em modo simulado", async () => {
+    const question = makeQuestion("010", "CLF_002-cloud-concepts")
+
+    renderLayout({
+      id: "session-1",
+      exam: "CLF_002",
+      domains: ["Conceitos de Nuvem"],
+      mode: "simulated",
+      questions: [question],
+      currentIndex: 0,
+      answers: {},
+      startTime: Date.now(),
+      timeLimit: 5 * 60
+    })
+
+    const timer = screen.getByRole("timer")
+
+    expect(timer).toBeInTheDocument()
+    expect(timer).toHaveTextContent(/\d+[h|m|s]/) 
   })
 })

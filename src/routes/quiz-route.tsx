@@ -9,11 +9,5 @@ export default function QuizPage() {
     return <Navigate to="/" replace />
   }
 
-  const currentQuestion = session.questions[session.currentIndex]
-
-  if (!currentQuestion) {
-    return <Navigate to="/" replace />
-  }
-
   return <QuizLayout session={session} />
 }

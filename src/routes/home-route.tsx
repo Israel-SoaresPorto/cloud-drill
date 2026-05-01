@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { ArrowRight, BookmarkCheck, BookOpen, Timer } from "lucide-react"
+import { BookmarkCheck, BookOpen, Timer } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +17,12 @@ import { selectExamQuestions } from "@/lib/quiz"
 import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 import { cn } from "@/lib/utils"
 import { useResultStore } from "@/features/result/stores/result.store"
+import QuizAlert from "@/components/alert"
+import {
+  CLF_002_DISTRIBUTION,
+  CLF_002_DOMAINS,
+  type DomainCode,
+} from "@/types/domains"
 
 const features = [
   {
@@ -26,7 +32,7 @@ const features = [
   },
   {
     icon: Timer,
-    title: "Modo Simulado (Em breve)",
+    title: "Modo Simulado",
     description: "65 questões em 90 minutos como no exame real",
   },
   {
@@ -42,6 +48,31 @@ export default function HomeRoute() {
   const [isStartingQuiz, setIsStartingQuiz] = useState(false)
   const startQuiz = useQuizStore((state) => state.startSession)
   const result = useResultStore((state) => state.result)
+  const [simulatedModeSelected, setSimulatedModeSelected] = useState(false)
+
+  const handleStartSimulated = useCallback(() => {
+    setIsStartingQuiz(true)
+    setSimulatedModeSelected(false)
+
+    const loadedQuestions = loadQuestionsForExam("CLF_002")
+    const selectedQuestions = selectExamQuestions(
+      "CLF_002",
+      loadedQuestions,
+      CLF_002_DISTRIBUTION
+    )
+
+    startQuiz({
+      exam: "CLF_002",
+      questions: selectedQuestions,
+      mode: "simulated",
+      questionCount: 65,
+      domains: Object.keys(CLF_002_DOMAINS) as DomainCode[],
+    })
+
+    setTimeout(() => {
+      navigate("/quiz")
+    }, 2000)
+  }, [startQuiz, navigate])
 
   const handleStartQuiz = useCallback(
     (config: QuizConfig) => {
@@ -88,7 +119,7 @@ export default function HomeRoute() {
 
       setTimeout(() => {
         navigate("/quiz")
-      }, 500)
+      }, 2000)
     },
     [navigate, startQuiz]
   )
@@ -159,28 +190,41 @@ export default function HomeRoute() {
                 ))}
               </div>
 
+              <h3 className="text-xl font-semibold text-foreground">
+                Escolha o Modo de Estudo
+              </h3>
+
               <div className="flex gap-4 pt-2">
-                <Button
-                  type="button"
-                  size="lg"
-                  className="shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
-                  onClick={() => setIsQuizConfigOpen(true)}
-                >
-                  Começar a Estudar
-                  <ArrowRight className="size-4" />
-                </Button>
-                {result && (
+                <div className="flex flex-wrap justify-center gap-4">
                   <Button
                     type="button"
                     size="lg"
-                    variant="outline"
-                    className="bg-transparent hover:bg-accent/75 dark:hover:bg-accent/50 shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
-                    onClick={() => navigate("/resultado", { replace: true })}
+                    className="w-40 shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
+                    onClick={() => setIsQuizConfigOpen(true)}
                   >
-                    Ver Resultado Anterior
+                    Modo Livre
                   </Button>
-                )}
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="w-40 shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5"
+                    onClick={() => setSimulatedModeSelected(true)}
+                  >
+                    Modo Simulado
+                  </Button>
+                </div>
               </div>
+              {result && (
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="bg-transparent shadow-[0_12px_30px_rgba(255,168,0,0.2)] transition-transform hover:-translate-y-0.5 hover:bg-accent/75 dark:hover:bg-accent/50"
+                  onClick={() => navigate("/resultado", { replace: true })}
+                >
+                  Ver Resultado Anterior
+                </Button>
+              )}
             </div>
           </section>
         </div>
@@ -191,6 +235,16 @@ export default function HomeRoute() {
           na preparação para a certificação AWS Certified Cloud Practitioner.
         </p>
       </footer>
+
+      {simulatedModeSelected && (
+        <QuizAlert
+          title="Ir para o Modo Simulado"
+          description="O Modo Simulado oferece uma experiência de exame real, com 65 questões e limite de tempo de 90 minutos, sem revelar as respostas. Iniciar agora?"
+          open={simulatedModeSelected}
+          onOpenChange={setSimulatedModeSelected}
+          onConfirm={handleStartSimulated}
+        />
+      )}
     </div>
   )
 }
