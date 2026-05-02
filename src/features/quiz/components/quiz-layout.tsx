@@ -50,15 +50,18 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   const [openQuitAlert, setOpenQuitAlert] = useState(false)
   const [openFinishAlert, setOpenFinishAlert] = useState(false)
 
+  const isSimulatedMode = currentSession.mode === "simulated"
   const currentQuestion = currentSession.questions[currentSession.currentIndex]
   const currentAnswer = currentSession.answers[currentQuestion.id]
   const currentSelected =
-    currentAnswer?.selectedOptionIds ?? draftAnswers[currentQuestion.id] ?? []
+    draftAnswers[currentQuestion.id] ?? currentAnswer?.selectedOptionIds ?? []
   const answeredCount = currentAnswer?.selectedOptionIds.length ?? 0
   const hasAnsweredCurrent = answeredCount > 0
   const isCurrentRevealed =
     (hasAnsweredCurrent || isRevealed) && currentAnswer !== undefined
-  const canConfirm = !hasAnsweredCurrent && currentSelected.length > 0
+  const canReveal = isCurrentRevealed && !isSimulatedMode
+  const canConfirm =
+    !isSimulatedMode && !hasAnsweredCurrent && currentSelected.length > 0
   const canGoPrevious = currentSession.currentIndex > 0
   const canGoNext =
     currentSession.currentIndex < currentSession.questions.length - 1
@@ -66,10 +69,9 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     currentSession.exam === "CLF_002"
       ? "Cloud Certified Practitioner"
       : "AWS Certification"
-  const timerLabel =
-    currentSession.mode === "simulated"
-      ? formatTimerLabel(timeRemaining ?? currentSession.timeLimit)
-      : "Prática"
+  const timerLabel = isSimulatedMode
+    ? formatTimerLabel(timeRemaining ?? currentSession.timeLimit)
+    : "Prática"
 
   const totalAnswered = useMemo(
     () =>
@@ -82,12 +84,23 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   const percentComplete =
     (totalAnswered / Math.max(currentSession.questions.length, 1)) * 100
 
+  const handleSelectionChange = (nextSelected: OptionsID[]) => {
+    if (isSimulatedMode) {
+      submitAnswer(currentQuestion.id, nextSelected)
+      return
+    }
+
+    setDraftAnswers((prev) => ({
+      ...prev,
+      [currentQuestion.id]: nextSelected,
+    }))
+  }
+
   const handleConfirm = () => {
     if (!canConfirm || isExpired) return
 
-    submitAnswer(currentQuestion.id, currentSelected)
-
     if (currentSession.mode === "practice") {
+      submitAnswer(currentQuestion.id, currentSelected)
       revealAnswer()
     }
   }
@@ -169,20 +182,17 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
             <QuestionCard
               question={currentQuestion}
               selectedOptionIds={currentSelected}
-              revealed={isCurrentRevealed}
-              disabled={hasAnsweredCurrent || isExpired}
+              revealed={canReveal}
+              disabled={(hasAnsweredCurrent || isExpired) && canReveal}
               isMarkedForReview={
                 currentSession.reviewFlags?.[currentQuestion.id] ?? false
               }
-              onSelectionChange={(nextSelected) => {
-                setDraftAnswers((prev) => ({
-                  ...prev,
-                  [currentQuestion.id]: nextSelected as OptionsID[],
-                }))
-              }}
+              onSelectionChange={(nextSelected) =>
+                handleSelectionChange(nextSelected)
+              }
               onToggleReview={() => toggleQuestionReview(currentQuestion.id)}
             />
-            {isCurrentRevealed && currentSession.mode === "practice" && (
+            {canReveal && (
               <QuizExplanation
                 question={currentQuestion}
                 answer={currentAnswer}
@@ -205,7 +215,13 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
 
       <footer className="sticky bottom-0 place-items-center border-t border-secondary bg-card px-4 py-4 md:px-8 lg:px-12">
         {isExpired ? (
-          <div className="w-full">
+          <div
+            className="w-full"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            aria-label="Tempo expirado"
+          >
             <div className="flex w-full items-center justify-center rounded-lg bg-destructive/10 px-4 py-4 text-center">
               <div className="flex flex-col items-center gap-2">
                 <span className="text-lg font-semibold text-destructive">

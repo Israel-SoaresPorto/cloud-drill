@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react"
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, test } from "vitest"
 import QuizLayout from "@/features/quiz/components/quiz-layout"
 import { makeQuestion } from "../../../utils/question"
@@ -6,14 +6,13 @@ import renderWithRouter from "../../../utils/render-with-router"
 import type { QuizSession } from "@/types/quiz"
 import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 
-function renderLayout(
-  session: QuizSession,
-) {
+function renderLayout(session: QuizSession) {
   useQuizStore.setState((state) => ({
     ...state,
     session,
     isRevealed: false,
     timeRemaining: null,
+    sessionExpired: false,
   }))
 
   renderWithRouter(
@@ -128,13 +127,13 @@ describe("QuizLayout", () => {
 
     fireEvent.click(nextButton)
 
-    waitFor(async () => {
-      const nextQuestion = await screen.getByText(q2.question)
+    await waitFor(() => {
+      const nextQuestion = screen.getByText(q2.question)
       expect(nextQuestion).toBeInTheDocument()
     })
   })
 
-  test("voltar para a questão anterior", () => {
+  test("voltar para a questão anterior", async () => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
@@ -164,7 +163,7 @@ describe("QuizLayout", () => {
 
     fireEvent.click(previousButton)
 
-    waitFor(() => {
+    await waitFor(() => {
       const previousQuestion = screen.getByText(q1.question)
       expect(previousQuestion).toBeInTheDocument()
     })
@@ -224,7 +223,7 @@ describe("QuizLayout", () => {
     ).toBeInTheDocument()
   })
 
-  test("ao finalizar com pendências abre alerta e confirma finalização parcial", () => {
+  test("ao finalizar com pendências abre alerta e confirma finalização parcial", async () => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
@@ -257,13 +256,13 @@ describe("QuizLayout", () => {
       within(alertDialog).getByRole("button", { name: "Confirmar" })
     )
 
-    waitFor(async () => {
-      const result = await screen.getByText("Resultado")
+    await waitFor(() => {
+      const result = screen.getByText("Resultado")
       expect(result).toBeInTheDocument()
     })
   })
 
-  test("ao finalizar sem pendências finaliza normalmente", () => {
+  test("ao finalizar sem pendências finaliza normalmente", async() => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
@@ -291,8 +290,8 @@ describe("QuizLayout", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Finalizar" }))
 
-    waitFor(async () => {
-      const result = await screen.getByText("Resultado")
+    await waitFor(() => {
+      const result = screen.getByText("Resultado")
       expect(result).toBeInTheDocument()
     })
   })
@@ -407,7 +406,9 @@ describe("QuizLayout", () => {
       startTime: 1000,
     })
 
-    useQuizStore.getState().endSession(true) // Forçar expiração da sessão
+    act(() => {
+      useQuizStore.getState().endSession(true)
+    })
 
     // Assert - verificar que "Tempo expirado" aparece
     await waitFor(() =>
@@ -453,12 +454,57 @@ describe("QuizLayout", () => {
       currentIndex: 0,
       answers: {},
       startTime: Date.now(),
-      timeLimit: 5 * 60
+      timeLimit: 5 * 60,
     })
 
     const timer = screen.getByRole("timer")
 
     expect(timer).toBeInTheDocument()
-    expect(timer).toHaveTextContent(/\d+[h|m|s]/) 
+    expect(timer).toHaveTextContent(/\d+[h|m|s]/)
+  })
+
+  test("permite alterar resposta anterior em modo simulado", async () => {
+    const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
+    const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
+
+    renderLayout({
+      id: "session-1",
+      exam: "CLF_002",
+      domains: ["Conceitos de Nuvem"],
+      mode: "simulated",
+      questions: [q1, q2],
+      currentIndex: 1,
+      answers: {
+        [q1.id]: {
+          id: q1.id,
+          selectedOptionIds: ["a"],
+          isCorrect: true,
+        },
+        [q2.id]: {
+          id: q2.id,
+          selectedOptionIds: ["a"],
+          isCorrect: true,
+        },
+      },
+      startTime: 1000,
+      timeLimit: 5400,
+    })
+
+    const previousButton = screen.getByRole("button", { name: "Anterior" })
+
+    fireEvent.click(previousButton)
+
+    await waitFor(() => {
+      const previousQuestion = screen.getByText(q1.question)
+      expect(previousQuestion).toBeInTheDocument()
+    })
+
+    const optionA = screen.getByRole("radio", { name: /a\./i })
+    const optionB = screen.getByRole("radio", { name: /b\./i })
+
+    fireEvent.click(optionB)
+
+    await waitFor(() => expect(optionB).toBeChecked())
+    expect(optionA).not.toBeChecked()
   })
 })

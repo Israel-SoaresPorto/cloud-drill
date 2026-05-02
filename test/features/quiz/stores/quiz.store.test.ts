@@ -88,7 +88,7 @@ describe("Quiz Store - Logic", () => {
     expect(useQuizStore.getState().session?.answers).toEqual({})
   })
 
-  test("nextQuestion e previousQuestion respeitam limites e isRevealed", () => {
+  test("nextQuestion e previousQuestion respeitam limites em modo simulado", () => {
     const q1 = makeQuestion("001", "CLF_002-cloud-concepts")
     const q2 = makeQuestion("002", "CLF_002-security-and-compliance")
 
@@ -110,7 +110,7 @@ describe("Quiz Store - Logic", () => {
     useQuizStore.getState().submitAnswer(q1.id, ["a"])
     useQuizStore.getState().previousQuestion()
     expect(useQuizStore.getState().session?.currentIndex).toBe(0)
-    expect(useQuizStore.getState().isRevealed).toBe(true)
+    expect(useQuizStore.getState().isRevealed).toBe(false)
 
     useQuizStore.getState().previousQuestion()
     expect(useQuizStore.getState().session?.currentIndex).toBe(0)

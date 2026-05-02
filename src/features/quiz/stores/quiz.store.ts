@@ -68,7 +68,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
         ...session,
         currentIndex: questionIndex,
       },
-      isRevealed: hasAnsweredTargetQuestion,
+      isRevealed: session.mode === "practice" && hasAnsweredTargetQuestion,
     })
   },
 
@@ -115,9 +115,6 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       selectedOptionIds: answers,
       isCorrect,
     }
-
-    console.log("Resposta submetida:", questionAnswer)
-    console.log("Tempo Expirado?", get().sessionExpired)
 
     // remove questão dos flags de revisão ao responder
     const reviewFlags = { ...(session.reviewFlags ?? {}) }
