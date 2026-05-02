@@ -1,6 +1,6 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import "@testing-library/jest-dom"
-import { beforeEach, describe, expect, test, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import HomeRoute from "@/routes/home-route"
 import type { QuizConfig, QuizResult } from "@/types/quiz"
 import type { Question } from "@/types/question"
@@ -84,27 +84,7 @@ describe("HomeRoute", () => {
     ])
   }
 
-  const result: QuizResult = {
-    sessionId: "mock-session-id",
-    exam: "CLF_002",
-    mode: "practice",
-    duration: 1200,
-    completedAt: new Date(),
-    score: 85,
-    correctCount: 17,
-    incorrectCount: 3,
-    totalQuestions: 20,
-    domainBreakdown: {
-      "CLF_002-cloud-concepts": { correct: 7, total: 8 },
-      "CLF_002-security-and-compliance": { correct: 5, total: 6 },
-      "CLF_002-aws-technologies": { correct: 4, total: 5 },
-      "CLF_002-billing-and-pricing": { correct: 1, total: 1 },
-    },
-    passed: true,
-  }
-
   beforeEach(() => {
-    vi.clearAllMocks()
     vi.useRealTimers()
 
     mockLoadQuestionsForExam.mockReturnValue([])
@@ -130,6 +110,10 @@ describe("HomeRoute", () => {
     }
   })
 
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   test("renderiza a home com os elementos principais", () => {
     render()
 
@@ -147,13 +131,11 @@ describe("HomeRoute", () => {
       screen.getByText(/Cloud Certified Practitioner/i)
     ).toBeInTheDocument()
 
-    expect(screen.getByText(/Quiz Livre/i)).toBeInTheDocument()
-    expect(screen.getByText(/Modo Simulado \(Em breve\)/i)).toBeInTheDocument()
-    expect(screen.getByText(/Progresso Salvo/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Quiz Livre/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Modo Simulado/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Progresso Salvo/i)).toBeInTheDocument()
 
-    expect(
-      screen.getByRole("button", { name: /Começar a Estudar/i })
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Escolha o modo/i)).toBeInTheDocument()
 
     expect(
       screen.getByText(
@@ -168,17 +150,27 @@ describe("HomeRoute", () => {
     expect(screen.getByTestId("header")).toBeInTheDocument()
   })
 
-  test("abre o modal de configuração ao clicar no CTA", () => {
+  test("abre o modal de configuração do modo pŕatica", () => {
     render()
 
     expect(screen.getByText("closed")).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole("button", { name: /Começar a Estudar/i }))
+    fireEvent.click(screen.getByRole("button", { name: /Modo Livre/i }))
 
     expect(screen.getByText("open")).toBeInTheDocument()
   })
 
-  test("inicia sessão e navega para /quiz após o delay", () => {
+  test("abre o alert de confirmação do modo simulado", () => {
+    render()
+
+    expect(screen.queryByTestId("alert")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /Modo Simulado/i }))
+
+    expect(screen.getByText("Ir para o Modo Simulado")).toBeInTheDocument()
+  })
+
+  test("inicia modo prática e navega para /quiz após o delay", async () => {
     vi.useFakeTimers()
 
     const questions = [{ id: "CLF_002-question-001" }] as unknown as Question[]
@@ -188,7 +180,7 @@ describe("HomeRoute", () => {
 
     render()
 
-    fireEvent.click(screen.getByRole("button", { name: /Começar a Estudar/i }))
+    fireEvent.click(screen.getByRole("button", { name: /Modo Livre/i }))
     fireEvent.click(screen.getByRole("button", { name: /Trigger Start/i }))
 
     expect(mockLoadQuestionsForExam).toHaveBeenCalledWith("CLF_002")
@@ -203,7 +195,39 @@ describe("HomeRoute", () => {
     const main = document.querySelector("main")
     expect(main).toHaveClass("opacity-60")
 
-    vi.advanceTimersByTime(500)
+    act(() => {
+      vi.advanceTimersByTime(2000)
+    })
+
+    const quizPage = screen.getByText(/Quiz Page/i)
+    expect(quizPage).toBeInTheDocument()
+  })
+
+  test("inicia modo simulado e navega para /quiz após o delay", async () => {
+    vi.useFakeTimers()
+
+    const questions = [{ id: "CLF_002-question-001" }] as unknown as Question[]
+
+    mockLoadQuestionsForExam.mockReturnValue(questions)
+    mockSelectExamQuestions.mockReturnValue(questions)
+
+    render()
+
+    fireEvent.click(screen.getByRole("button", { name: /Modo Simulado/i }))
+    fireEvent.click(screen.getByRole("button", { name: /Confirmar/i }))
+
+    expect(mockLoadQuestionsForExam).toHaveBeenCalledWith("CLF_002")
+
+    expect(mockSelectExamQuestions).toHaveBeenCalledWith(
+      "CLF_002",
+      questions,
+      modalConfig.distribution
+    )
+
+    const main = document.querySelector("main")
+    expect(main).toHaveClass("opacity-60")
+
+    vi.advanceTimersByTime(2000)
 
     waitFor(async () => {
       const main = screen.getByText(/Quiz Page/i)
@@ -211,20 +235,49 @@ describe("HomeRoute", () => {
     })
   })
 
-  test("navega para resultado ao clicar no botão de resultado anterior", () => {
-    useResultStore.setState({
-      result,
+  test("navega para /resultado se houver resultado salvo", async () => {
+    const result: QuizResult = {
+      exam: "CLF_002",
+      mode: "simulated",
+      score: 80,
+      totalQuestions: 65,
+      correctCount: 52,
+      incorrectCount: 13,
+      domainBreakdown: {
+        "CLF_002-cloud-concepts": {
+          correct: 14,
+          total: 18,
+        },
+        "CLF_002-security-and-compliance": {
+          correct: 12,
+          total: 16,
+        },
+        "CLF_002-aws-technologies": {
+          correct: 18,
+          total: 24,
+        },
+        "CLF_002-billing-and-pricing": {
+          correct: 8,
+          total: 7,
+        },
+      },
+      completedAt: new Date(),
+      duration: 3600,
+      passed: true,
+      sessionId: "mock-session-id",
+    }
+
+    act(() => {
+      useResultStore.getState().setResult(result)
     })
 
     render()
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /Ver Resultado Anterior/i })
-    )
+    fireEvent.click(screen.getByRole("button", { name: /Ver Resultado/i }))
 
-    waitFor(async () => {
-      const main = screen.getByText(/Result Page/i)
-      expect(main).toBeInTheDocument()
+    await waitFor(() => {
+      const resultPage = screen.getByText(/Result Page/i)
+      expect(resultPage).toBeInTheDocument()
     })
   })
 })

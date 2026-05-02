@@ -56,7 +56,7 @@ describe("QuizHeader", () => {
     renderQuizHeader({ onOpenProgressMap })
 
     const progressMapButton = screen.getByRole("button", {
-      name: /abrir mapa de progresso/i,
+      name: /Abrir mapa de questões/i,
     })
     fireEvent.click(progressMapButton)
 

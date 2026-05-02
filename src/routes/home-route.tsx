@@ -172,11 +172,13 @@ export default function HomeRoute() {
                   <Card
                     key={title}
                     className="text-left backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5"
+                    aria-label={title}
+                    aria-description={description}
                   >
                     <CardHeader className="gap-3 p-5 pb-3">
                       <div className="flex items-center gap-2.5 text-foreground">
-                        <span className="inline-flex size-6 items-center justify-center rounded-md text-accent-cyan">
-                          <Icon className="size-6" />
+                        <span aria-hidden="true" className="inline-flex size-6 items-center justify-center rounded-md text-accent-cyan">
+                          <Icon className="size-6" aria-hidden="true" focusable="false" />
                         </span>
                         <CardTitle className="text-base text-foreground">
                           {title}
