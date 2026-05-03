@@ -26,12 +26,32 @@ export const resultStoreCreator = (
     }),
 })
 
+interface PersistedState {
+  result: QuizResult | null
+}
+
 export const useResultStore = create<QuizResultState>()(
   persist(resultStoreCreator, {
     name: RESULT_STORAGE_KEY,
     partialize: (state) => ({
       result: state.result,
     }),
-    version: 1,
+    version: 2,
+    migrate: (state: unknown, version: number): PersistedState => {
+      if (version === 1) {
+        const typedState = state as PersistedState
+        // Migração de v1 para v2: adicionar questionAnswerDetails se não existir
+        return {
+          result: typedState.result
+            ? {
+                ...typedState.result,
+                questionAnswerDetails:
+                  typedState.result?.questionAnswerDetails || [],
+              }
+            : null,
+        }
+      }
+      return state as PersistedState
+    },
   })
 )

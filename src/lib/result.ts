@@ -5,7 +5,7 @@ import type {
   ExamDomains,
 } from "@/types/domains"
 import type { Question, QuestionAnswer } from "@/types/question"
-import type { QuizMode, QuizResult } from "@/types/quiz"
+import type { QuizMode, QuizResult, QuestionAnswerDetail } from "@/types/quiz"
 
 export const MIN_SCORE = 100
 export const MAX_SCORE = 1000
@@ -76,6 +76,18 @@ export function calculateQuizResult(
   const passed = hasPassed(score)
   const domainBreakdown = calculateDomainBreakdown(questions, answers)
 
+  const questionAnswerDetails: QuestionAnswerDetail[] = questions.map((q) => {
+    const userAnswer = answers[q.id]
+    return {
+      ...userAnswer,
+      questionText: q.question,
+      correctAnswers: q.correctAnswers,
+      explanation: q.explanation,
+      domain: q.domain,
+      options: q.options,
+    }
+  })
+
   return {
     sessionId,
     exam,
@@ -88,5 +100,6 @@ export function calculateQuizResult(
     domainBreakdown,
     duration,
     completedAt: new Date(),
+    questionAnswerDetails,
   }
 }

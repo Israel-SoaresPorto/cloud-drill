@@ -265,6 +265,7 @@ describe("HomeRoute", () => {
       duration: 3600,
       passed: true,
       sessionId: "mock-session-id",
+      questionAnswerDetails: [],
     }
 
     act(() => {

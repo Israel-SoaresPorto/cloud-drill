@@ -6,7 +6,13 @@ import type {
   ExamDomains,
   Exams,
 } from "./domains"
-import type { Question, QuestionAnswer, QuestionID } from "./question"
+import type {
+  Question,
+  QuestionAnswer,
+  QuestionID,
+  QuestionOptions,
+  QuestionExplanation,
+} from "./question"
 
 export type QuizMode = "simulated" | "practice"
 
@@ -33,6 +39,14 @@ export interface QuizSession {
   timeLimit?: number
 }
 
+export type QuestionAnswerDetail = QuestionAnswer & {
+  questionText: string
+  correctAnswers: string[]
+  explanation: QuestionExplanation
+  domain: string
+  options: QuestionOptions[]
+}
+
 export interface QuizResult {
   sessionId: string
   exam: Exam
@@ -45,4 +59,5 @@ export interface QuizResult {
   domainBreakdown: DomainBreakdown
   duration: number // em segundos
   completedAt: Date
+  questionAnswerDetails: QuestionAnswerDetail[]
 }

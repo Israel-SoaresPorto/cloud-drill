@@ -174,4 +174,80 @@ describe("calculateQuizResult", () => {
     expect(result).toHaveProperty("domainBreakdown")
     expect(result).toHaveProperty("duration", 300)
   })
+
+  test("incluir questionAnswerDetails no resultado", () => {
+    const { questions, answers } = createQuestionsAndAnswers()
+
+    const result = calculateQuizResult(
+      "session-123",
+      "CLF_002",
+      "practice",
+      questions,
+      answers,
+      300
+    )
+
+    expect(result).toHaveProperty("questionAnswerDetails")
+    expect(Array.isArray(result.questionAnswerDetails)).toBe(true)
+    expect(result.questionAnswerDetails).toHaveLength(questions.length)
+  })
+
+  test("questionAnswerDetails contém dados da pergunta e resposta do usuário", () => {
+    const { questions, answers } = createQuestionsAndAnswers()
+
+    const result = calculateQuizResult(
+      "session-123",
+      "CLF_002",
+      "practice",
+      questions,
+      answers,
+      300
+    )
+
+    const firstDetail = result.questionAnswerDetails[0]
+    const firstQuestion = questions[0]
+    const firstAnswer = answers[firstQuestion.id]
+
+    expect(firstDetail).toHaveProperty("id", firstQuestion.id)
+    expect(firstDetail).toHaveProperty(
+      "selectedOptionIds",
+      firstAnswer.selectedOptionIds
+    )
+    expect(firstDetail).toHaveProperty("isCorrect", firstAnswer.isCorrect)
+    expect(firstDetail).toHaveProperty("questionText", firstQuestion.question)
+    expect(firstDetail).toHaveProperty(
+      "correctAnswers",
+      firstQuestion.correctAnswers
+    )
+    expect(firstDetail).toHaveProperty("explanation", firstQuestion.explanation)
+    expect(firstDetail).toHaveProperty("domain", firstQuestion.domain)
+    expect(firstDetail).toHaveProperty("options", firstQuestion.options)
+  })
+
+  test("questionAnswerDetails preserva informações corretas de múltiplas perguntas", () => {
+    const { questions, answers } = createQuestionsAndAnswers()
+
+    const result = calculateQuizResult(
+      "session-123",
+      "CLF_002",
+      "practice",
+      questions,
+      answers,
+      300
+    )
+
+    questions.forEach((question, index) => {
+      const detail = result.questionAnswerDetails[index]
+      const answer = answers[question.id]
+
+      expect(detail.id).toBe(question.id)
+      expect(detail.questionText).toBe(question.question)
+      expect(detail.correctAnswers).toEqual(question.correctAnswers)
+      expect(detail.selectedOptionIds).toEqual(answer.selectedOptionIds)
+      expect(detail.isCorrect).toBe(answer.isCorrect)
+      expect(detail.domain).toBe(question.domain)
+      expect(detail.options).toEqual(question.options)
+      expect(detail.explanation).toEqual(question.explanation)
+    })
+  })
 })

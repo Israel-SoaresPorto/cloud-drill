@@ -18,6 +18,7 @@ export function makeResult(overrides: Partial<QuizResult> = {}): QuizResult {
     },
     duration: 1122,
     completedAt: new Date("2026-04-15T12:00:00.000Z"),
+    questionAnswerDetails: [],
     ...overrides,
   }
 }
