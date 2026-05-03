@@ -11,8 +11,8 @@
 
 @custom-variant checkbox-checked (&:is(input[type='checkbox']:checked));
 
-@custom-variant answer-is-correct (&[data-answer-is-correct="true"]);
-@custom-variant answer-is-incorrect (&[data-answer-is-correct="false"]);
+@custom-variant answer-correct (&[data-answer-correct="true"]);
+@custom-variant answer-incorrect (&[data-answer-correct="false"]);
 
 @theme inline {
   /* Backgrounds */
