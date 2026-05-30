@@ -18,6 +18,7 @@ import { useQuizStore } from "@/features/quiz/stores/quiz.store"
 import { cn } from "@/lib/utils"
 import { useResultStore } from "@/features/result/stores/result.store"
 import QuizAlert from "@/components/alert"
+import LoadingOverlay from "@/components/loading-overlay"
 import {
   CLF_002_DISTRIBUTION,
   CLF_002_DOMAINS,
@@ -46,12 +47,14 @@ export default function HomeRoute() {
   const [isQuizConfigOpen, setIsQuizConfigOpen] = useState(false)
   const navigate = useNavigate()
   const [isStartingQuiz, setIsStartingQuiz] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState("")
   const startQuiz = useQuizStore((state) => state.startSession)
   const result = useResultStore((state) => state.result)
   const [simulatedModeSelected, setSimulatedModeSelected] = useState(false)
 
   const handleStartSimulated = useCallback(() => {
     setIsStartingQuiz(true)
+    setLoadingMessage("Carregando modo simulado...")
     setSimulatedModeSelected(false)
 
     const loadedQuestions = loadQuestionsForExam("CLF_002")
@@ -71,12 +74,13 @@ export default function HomeRoute() {
 
     setTimeout(() => {
       navigate("/quiz")
-    }, 2000)
+    }, 600)
   }, [startQuiz, navigate])
 
   const handleStartQuiz = useCallback(
     (config: QuizConfig) => {
       setIsStartingQuiz(true)
+      setLoadingMessage("Carregando questões...")
       setIsQuizConfigOpen(false)
 
       const loadedQuestions = loadQuestionsForExam(config.exam)
@@ -119,7 +123,7 @@ export default function HomeRoute() {
 
       setTimeout(() => {
         navigate("/quiz")
-      }, 2000)
+      }, 600)
     },
     [navigate, startQuiz]
   )
@@ -247,6 +251,8 @@ export default function HomeRoute() {
           onConfirm={handleStartSimulated}
         />
       )}
+
+      <LoadingOverlay isVisible={isStartingQuiz} message={loadingMessage} />
     </div>
   )
 }

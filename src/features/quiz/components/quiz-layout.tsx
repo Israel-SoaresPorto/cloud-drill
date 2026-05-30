@@ -11,6 +11,7 @@ import { formatTimerLabel } from "@/lib/utils"
 import { useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router"
 import QuizAlert from "@/components/alert"
+import LoadingOverlay from "@/components/loading-overlay"
 import { useResultStore } from "../../result/stores/result.store"
 import { calculateQuizResult } from "@/lib/result"
 import { X } from "lucide-react"
@@ -36,6 +37,8 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   const endSession = useQuizStore((state) => state.endSession)
   const clearSession = useQuizStore((state) => state.clearSession)
   const timeRemaining = useQuizStore((state) => state.timeRemaining)
+  const isProcessingResult = useQuizStore((state) => state.isProcessingResult)
+  const setProcessingResult = useQuizStore((state) => state.setProcessingResult)
   const setResult = useResultStore((state) => state.setResult)
 
   // Usar o hook do timer - ele gerencia o countdown automaticamente
@@ -106,6 +109,8 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
   }
 
   const handleFinish = useCallback(() => {
+    setProcessingResult(true)
+
     const {
       answers,
       exam,
@@ -125,8 +130,12 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
     )
 
     setResult(result)
-    navigate("/resultado", { replace: true })
-  }, [endSession, setResult, navigate])
+
+    setTimeout(() => {
+      setProcessingResult(false)
+      navigate("/resultado", { replace: true })
+    }, 800)
+  }, [endSession, setResult, navigate, setProcessingResult])
 
   const handleQuizComplete = () => {
     const totalQuestions = currentSession.questions.length
@@ -313,6 +322,11 @@ export default function QuizLayout({ session }: QuizLayoutProps) {
         title="Finalizar quiz"
         description="Você ainda tem questões não respondidas. Tem certeza que deseja finalizar? Você receberá um resultado parcial."
         onConfirm={handleFinish}
+      />
+
+      <LoadingOverlay
+        isVisible={isProcessingResult}
+        message="Calculando seu resultado..."
       />
     </div>
   )

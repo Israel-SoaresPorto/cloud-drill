@@ -336,6 +336,14 @@ describe("Quiz Store - Logic", () => {
 
     expect(sessionResult).toHaveProperty("sessionExpired")
   })
+
+  test("setProcessingResult atualiza estado corretamente", () => {
+    useQuizStore.getState().setProcessingResult(true)
+    expect(useQuizStore.getState().isProcessingResult).toBe(true)
+
+    useQuizStore.getState().setProcessingResult(false)
+    expect(useQuizStore.getState().isProcessingResult).toBe(false)
+  })
 })
 
 describe("Quiz Store - Persistence", () => {

@@ -196,7 +196,7 @@ describe("HomeRoute", () => {
     expect(main).toHaveClass("opacity-60")
 
     act(() => {
-      vi.advanceTimersByTime(2000)
+      vi.advanceTimersByTime(600)
     })
 
     const quizPage = screen.getByText(/Quiz Page/i)
@@ -227,12 +227,24 @@ describe("HomeRoute", () => {
     const main = document.querySelector("main")
     expect(main).toHaveClass("opacity-60")
 
-    vi.advanceTimersByTime(2000)
+    act(() => vi.advanceTimersByTime(600))
 
     waitFor(async () => {
       const main = screen.getByText(/Quiz Page/i)
       expect(main).toBeInTheDocument()
     })
+  })
+
+  test("exibe loading overlay com mensagem correta durante início do quiz", () => {
+    render()
+
+    fireEvent.click(screen.getByRole("button", { name: /Modo Simulado/i }))
+    fireEvent.click(screen.getByRole("button", { name: /Confirmar/i }))
+
+    const loadingOverlay = screen.getByRole("status", {
+      name: /Carregando modo simulado.../i,
+    })
+    expect(loadingOverlay).toBeInTheDocument()
   })
 
   test("navega para /resultado se houver resultado salvo", async () => {

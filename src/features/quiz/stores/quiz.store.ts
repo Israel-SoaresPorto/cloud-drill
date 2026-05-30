@@ -16,6 +16,7 @@ export interface QuizState {
   isRevealed: boolean // feedback visível?
   timeRemaining: number | null // para modo simulado
   sessionExpired: boolean // rastreia expiração por timeout
+  isProcessingResult: boolean // rastreia processamento do resultado
 
   // Ações
   startSession: (config: SessionConfig) => void
@@ -32,6 +33,7 @@ export interface QuizState {
     QuizSession,
     "domains" | "currentIndex" | "startTime" | "endTime" | "timeLimit"
   > & { duration: number }
+  setProcessingResult: (isProcessing: boolean) => void
   clearSession: () => void
 }
 
@@ -49,6 +51,7 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
   isRevealed: false,
   timeRemaining: null,
   sessionExpired: false,
+  isProcessingResult: false,
 
   goToQuestion: (questionIndex) => {
     const { session } = get()
@@ -236,7 +239,12 @@ export const quizStoreCreator: StateCreator<QuizState> = (set, get) => ({
       isRevealed: false,
       timeRemaining: null,
       sessionExpired: false,
+      isProcessingResult: false,
     }),
+
+  // Definir estado de processamento de resultado
+  setProcessingResult: (isProcessing) =>
+    set({ isProcessingResult: isProcessing }),
 })
 
 export const useQuizStore = create<QuizState>()(
