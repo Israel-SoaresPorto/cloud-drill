@@ -237,7 +237,7 @@ export default function HomeRoute() {
       </main>
       <footer className="max-w-8xl w-full p-6 px-6 py-6 text-center md:px-8 lg:px-12">
         <p className="text-xs text-muted-foreground">
-          v1.0 - CloudDrill é um projeto de código aberto e gratuito para ajudar
+          v2.0 - CloudDrill é um projeto de código aberto e gratuito para ajudar
           na preparação para a certificação AWS Certified Cloud Practitioner.
         </p>
       </footer>
