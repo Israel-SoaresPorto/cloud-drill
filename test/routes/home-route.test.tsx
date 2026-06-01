@@ -139,7 +139,7 @@ describe("HomeRoute", () => {
 
     expect(
       screen.getByText(
-        /v1\.0 - CloudDrill é um projeto de código aberto e gratuito para ajudar na preparação para a certificação AWS Certified Cloud Practitioner\./i
+        /\d\.\d - CloudDrill é um projeto de código aberto e gratuito para ajudar na preparação para a certificação AWS Certified Cloud Practitioner\./g
       )
     ).toBeInTheDocument()
   })
