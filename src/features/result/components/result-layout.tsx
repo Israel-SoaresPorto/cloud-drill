@@ -3,9 +3,11 @@ import { formatTimerLabel } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Progress, ProgressLabel } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { CircularProgress } from "@/components/circular-progress"
 import { useNavigate } from "react-router"
 import { QuestionsReviewSection } from "./questions-review-section"
 import type { QuizResult } from "@/types/quiz"
+import { MAX_SCORE } from "@/lib/result"
 
 interface ResultLayoutProps {
   result: QuizResult
@@ -37,38 +39,65 @@ export default function ResultLayout({ result }: ResultLayoutProps) {
 
   return (
     <main className="min-h-dvh bg-deep px-6 py-8 md:px-8 md:py-12 lg:px-12">
-      <section className="mx-auto flex w-full max-w-4xl flex-col space-y-12">
-        {/* SECTION 1: HEADER COM RESUMO */}
-        <header className="flex flex-col items-start gap-4">
-          <Badge
-            data-approved={result.passed}
-            className="data-[approved=false]:bg-wrong/20 data-[approved=false]:text-wrong data-[approved=true]:bg-correct/20 data-[approved=true]:text-correct"
-            variant="outline"
-            role="status"
-          >
-            {result.passed ? "Aprovado" : "Não Aprovado"}
-          </Badge>
-
-          <div className="space-y-2">
-            <h1
+      <div className="mx-auto w-full max-w-4xl space-y-12">
+        {/* Header */}
+        <header className="flex flex-col-reverse items-center gap-8 xs:flex-row xs:justify-between">
+          <div className="flex flex-col items-center gap-4 xs:items-start">
+            <Badge
               data-approved={result.passed}
-              className="text-6xl font-bold data-[approved=false]:text-wrong data-[approved=true]:text-correct"
+              className="text-lg data-[approved=false]:bg-wrong/20 data-[approved=false]:text-wrong data-[approved=true]:bg-correct/20 data-[approved=true]:text-correct"
+              variant="outline"
+              role="status"
             >
-              {result.score}
-            </h1>
-            <p className="text-secondary-tx">
-              {result.correctCount} de {result.totalQuestions} questões corretas
-            </p>
+              {result.passed ? "Aprovado" : "Não Aprovado"}
+            </Badge>
+
+            <div className="space-y-2 text-center xs:text-left">
+              <h1 className="text-2xl font-bold text-primary-tx">
+                Sua Pontuação
+              </h1>
+              <p className="text-secondary-tx">
+                {result.correctCount} de {result.totalQuestions} questões
+                corretas
+              </p>
+            </div>
+          </div>
+
+          <div className="flex-1 md:flex md:justify-end">
+            <CircularProgress
+              value={result.score}
+              max={100}
+              size="lg"
+              renderLabel={() => (
+                <div className="flex flex-col items-center">
+                  <span className="text-4xl font-bold">{result.score}</span>
+                  <span className="text-sm text-secondary-tx">
+                    /{MAX_SCORE}
+                  </span>
+                </div>
+              )}
+            />
           </div>
         </header>
 
-        {/* SECTION 2: ESTATÍSTICAS */}
+        {/* Ações */}
+        <div className="flex justify-center md:justify-start">
+          <Button
+            type="button"
+            size="lg"
+            onClick={() => navigate("/", { replace: true })}
+          >
+            Voltar para Home
+          </Button>
+        </div>
+
+        {/* Resumo de Desempenho */}
         <section className="space-y-8">
           <h2 className="text-lg font-semibold text-primary-tx">
             Resumo de Desempenho
           </h2>
 
-          {/* 4 Stats Cards */}
+          {/* Estatísticas */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <Card>
               <CardContent className="p-4 text-center">
@@ -104,7 +133,7 @@ export default function ResultLayout({ result }: ResultLayoutProps) {
             </Card>
           </div>
 
-          {/* Domain Breakdown */}
+          {/* Desempenho por Domínio */}
           <Card>
             <CardHeader>
               <CardTitle className="text-primary-tx">
@@ -143,24 +172,13 @@ export default function ResultLayout({ result }: ResultLayoutProps) {
           </Card>
         </section>
 
-        {/* SECTION 3: REVISÃO DE QUESTÕES */}
+        {/* Revisão de Questões */}
         {hasQuestionDetails && (
           <section>
             <QuestionsReviewSection details={result.questionAnswerDetails} />
           </section>
         )}
-
-        {/* SECTION 4: BOTÃO VOLTAR */}
-        <div className="flex justify-start">
-          <Button
-            type="button"
-            size="lg"
-            onClick={() => navigate("/", { replace: true })}
-          >
-            Voltar para Home
-          </Button>
-        </div>
-      </section>
+      </div>
     </main>
   )
 }
