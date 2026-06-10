@@ -69,7 +69,7 @@ export default function ResultLayout({ result }: ResultLayoutProps) {
               max={100}
               size="lg"
               renderLabel={() => (
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col absolute inset-0 items-center justify-center">
                   <span className="text-4xl font-bold">{result.score}</span>
                   <span className="text-sm text-secondary-tx">
                     /{MAX_SCORE}
