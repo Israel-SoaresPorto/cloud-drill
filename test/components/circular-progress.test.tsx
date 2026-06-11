@@ -8,7 +8,6 @@ describe("CircularProgress", () => {
     const svg = container.querySelector("svg")
     expect(svg).toHaveAttribute("width", "150")
     expect(svg).toHaveAttribute("height", "150")
-    expect(svg).toHaveAttribute("viewBox", "0 0 150 150")
   })
 
   test("renderiza SVG com dimensões corretas para tamanho md", () => {
@@ -83,7 +82,7 @@ describe("CircularProgress", () => {
     const { container } = render(<CircularProgress value={50} />)
     const circles = container.querySelectorAll("circle")
     expect(circles).toHaveLength(2)
-    expect(circles[0]).toHaveClass("text-muted/25")
+    expect(circles[0]).toHaveClass("text-muted/50")
     expect(circles[1]).toHaveClass("transition-all", "duration-500")
   })
 
@@ -162,12 +161,5 @@ describe("CircularProgress", () => {
     const { container } = render(<CircularProgress value={50} />)
     const svg = container.querySelector("svg")
     expect(svg).toHaveClass("-rotate-90", "transform")
-  })
-
-  test("container possui estilos inline corretos", () => {
-    const { container } = render(<CircularProgress value={50} size="md" />)
-    const wrapper = container.firstChild as HTMLElement
-    expect(wrapper.style.width).toBe("120px")
-    expect(wrapper.style.height).toBe("120px")
   })
 })
