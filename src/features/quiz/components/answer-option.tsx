@@ -29,10 +29,10 @@ export default function AnswerOption({
       htmlFor={id}
       data-answer-state={state}
       className={cn(
-        "group flex w-full cursor-pointer items-center gap-3 rounded-md border-2 bg-option px-3 py-3 text-sm transition-colors focus-within:ring-2 focus-within:ring-muted/75 focus-within:ring-offset-0 has-not-disabled:hover:bg-option-hover has-disabled:cursor-not-allowed has-disabled:opacity-90",
+        "group flex w-full cursor-pointer items-center gap-3 rounded-md border-2 bg-option px-3 py-3 text-sm transition-colors focus-within:ring-2 focus-within:ring-muted/75 focus-within:ring-offset-0 has-not-d abled:hover:bg-option-hover has-disabled:cursor-not-allowed has-disabled:opacity-90",
         "answer-correct:border-correct answer-correct:bg-correct/10 answer-correct:text-correct answer-correct:focus-within:ring-correct/30 answer-correct:hover:bg-correct/20",
         "answer-idle:border-idle answer-idle:text-secondary-tx",
-        "answer-selected:hover:bg-selected/20 answer-selected:border-accent-orange answer-selected:bg-accent-orange/10 answer-selected:focus-within:ring-accent-orange/30 answer-selected:hover:bg-accent-orange/20",
+        "answer-selected:border-accent-orange answer-selected:bg-accent-orange/10 answer-selected:focus-within:ring-accent-orange/30 answer-selected:hover:bg-accent-orange/20",
         "answer-wrong:border-wrong answer-wrong:bg-wrong/10 answer-wrong:text-wrong answer-wrong:focus-within:ring-wrong/30 answer-wrong:hover:bg-wrong/20"
       )}
     >

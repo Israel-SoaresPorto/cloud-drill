@@ -45,11 +45,11 @@ export function QuestionReviewItem({
         onToggle?.(detail.id)
       }}
     >
-      <AccordionTrigger className="flex items-start gap-3 rounded-none px-4 py-3 transition-colors hover:no-underline group-answer-correct:hover:bg-correct/10 group-answer-incorrect:hover:bg-wrong/20">
+      <AccordionTrigger className="flex items-start gap-3 rounded-none px-4 py-3 transition-colors hover:no-underline group-answer-is-correct:hover:bg-correct/10 group-answer-is-wrong:hover:bg-wrong/20">
         {/* Indicator badge */}
         <div
           className={cn(
-            "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white group-answer-correct:bg-correct group-answer-incorrect:bg-wrong"
+            "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white group-answer-is-correct:bg-correct group-answer-is-wrong:bg-wrong"
           )}
         >
           <QuestionReviewItemIndicator correct={isCorrect} />
@@ -83,7 +83,7 @@ export function QuestionReviewItem({
                 <div
                   key={option.id}
                   className={cn(
-                    "flex items-start justify-between gap-2 rounded-lg border-2 border-idle bg-option p-3 transition-colors data-[answer-correct='true']:border-correct data-[answer-correct='true']:bg-correct/10 data-[answer-wrong='true']:border-wrong data-[answer-wrong='true']:bg-wrong/10",
+                    "flex items-start justify-between gap-2 rounded-lg border-2 border-idle bg-option p-3 transition-colors data-[answer-is-correct='true']:border-correct data-[answer-is-correct='true']:bg-correct/10 data-[answer-wrong='true']:border-wrong data-[answer-wrong='true']:bg-wrong/10",
                     isCorrectAnswer && "border-correct bg-correct/10",
                     isUserSelected && !isCorrect && "border-wrong bg-wrong/10"
                   )}
