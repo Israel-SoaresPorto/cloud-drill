@@ -44,14 +44,10 @@ export function CircularProgress({
   }
 
   return (
-    <div
-      className={cn("relative", className)}
-      style={{ width: svgSize, height: svgSize }}
-    >
+    <div className={cn("relative", className)}>
       <svg
         width={svgSize}
         height={svgSize}
-        viewBox={`0 0 ${svgSize} ${svgSize}`}
         className="-rotate-90 transform"
       >
         {/* Background circle */}
@@ -62,7 +58,7 @@ export function CircularProgress({
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth[size]}
-          className="text-muted/25"
+          className="text-muted/50"
         />
 
         {/* Progress circle */}
@@ -71,7 +67,7 @@ export function CircularProgress({
           cy={svgSize / 2}
           r={radius}
           fill="none"
-          stroke={getColor(value)}
+          stroke={getColor(percentage)}
           strokeWidth={strokeWidth[size]}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -81,8 +77,7 @@ export function CircularProgress({
       </svg>
 
       {renderLabel && (
-        <div className="absolute inset-0 
-        ">
+        <div className="absolute inset-0">
           {renderLabel(percentage, value, max)}
         </div>
       )}

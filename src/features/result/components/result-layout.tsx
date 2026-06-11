@@ -66,7 +66,7 @@ export default function ResultLayout({ result }: ResultLayoutProps) {
           <div className="flex-1 md:flex md:justify-end">
             <CircularProgress
               value={result.score}
-              max={100}
+              max={1000}
               size="lg"
               renderLabel={() => (
                 <div className="flex flex-col absolute inset-0 items-center justify-center">
